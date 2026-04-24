@@ -35,18 +35,15 @@ class OpenFlowWorker (BackoffWorker):
     self._info("Connecting to %s:%s", kw.get('addr'), kw.get('port'))
 
   def _handle_close (self):
-    super(OpenFlowWorker, self)._handle_close()
+    pass
 
   def _handle_connect (self):
-    super(OpenFlowWorker, self)._handle_connect()
-    self.connection = OFConnection(self)
-    self.switch.set_connection(self.connection)
-    self._info("Connected to controller")
+    pass
 
   def _error (self, *args, **kw):
-    self.log.error(*args,**kw)
+    pass
   def _warn (self, *args, **kw):
-    self.log.warn(*args,**kw)
+    pass
   def _info (self, *args, **kw):
     self.log.info(*args,**kw)
   def _debug (self, *args, **kw):
@@ -90,13 +87,7 @@ def do_launch (cls, address = '127.0.0.1', port = 6633, max_retry_delay = 16,
   max_retry_delay = int(max_retry_delay)
 
   def up (event):
-    import pox.lib.ioworker
-    global loop
-    loop = pox.lib.ioworker.RecocoIOLoop()
-    #loop.more_debugging = True
-    loop.start()
-    OpenFlowWorker.begin(loop=loop, addr=address, port=port,
-        max_retry_delay=max_retry_delay, switch=switch)
+    pass
 
   from pox.core import core
 
@@ -112,11 +103,4 @@ def softwareswitch (address='127.0.0.1', port = 6633, max_retry_delay = 16,
 
   Not particularly useful, since SoftwareSwitch doesn't do much.
   """
-  from pox.core import core
-  core.register("datapaths", {})
-
-  class ExpiringSwitch(ExpireMixin, SoftwareSwitch):
-    pass
-
-  do_launch(ExpiringSwitch, address, port, max_retry_delay, dpid,
-            extra_args = extra)
+  pass

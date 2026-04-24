@@ -59,7 +59,7 @@ def _ctrl (char):
 
   Give it a string like "J" and it'll return b'\n'
   """
-  return bytes([char.encode()[0] - 64])
+  pass
 
 
 def _process_caps (caps):
@@ -557,23 +557,13 @@ class CursesCodes (object):
     Returns True if yes, False if no, None if indeterminate.
     If indeterminate, you should add more data.
     """
-    #print repr(data)
-    #print [x.replace("\x1b","$") for x in self._prefixes.keys()]
-    r = self._kprefixes.get(data)
-    if r is True: return True
-    if r is False: return None
-    if r is None: return False
-    raise RuntimeError()
+    pass
 
   def get_name (self, code):
-    if code not in self._code_to_name:
-      return "unnamed"
-    return self._code_to_name[code][0]
+    pass
 
   def get_long_name (self, code):
-    if code not in self._code_to_name:
-      return "unnamed"
-    return self._code_to_name[code][1]
+    pass
 
 
 class ServerWorker (TCPServerWorker, RecocoIOWorker):
@@ -713,7 +703,7 @@ class TelnetHandler (StateMachine):
 
   def _rx_telnet (self, msg):
     #self.log.info(" ".join("%02x" % (ord(x),) for x in msg))
-    print(" ".join("%02x" % (x,) for x in msg), end=' ')
+    pass
 
   @property
   def log (self):
@@ -725,7 +715,7 @@ class TelnetHandler (StateMachine):
     class O (object):
       pass
     def pr (fmt, *args):
-      print(fmt % args)
+      pass
     def nopr (*args):
       pass
     o = O()
@@ -741,68 +731,16 @@ class TelnetHandler (StateMachine):
     return o
 
   def __unread (self, data):
-    self.__buf = data + self.__buf
+    pass
 
   def __read (self, c=1):
-    r = self.__buf[:c]
-    self.__buf = self.__buf[c:]
-    return r
+    pass
 
   def _state_default (self):
-    data = b''
-    while True:
-      r = self.__read()
-      if r == b'':
-        break
-      if r == IAC:
-        self._state = self._state_iac
-        return True
-      data += r
-    self._rx_telnet(data)
+    pass
 
   def _state_iac (self):
-    r = self.__read()
-    if r == b'': return
-    if r == NOP:
-      pass
-    elif r == BRK:
-      self._break()
-    elif r == AO:
-      self._abort_output()
-    elif r == AYT:
-      self._are_you_there()
-    elif r == EC:
-      self._erase_character()
-    elif r == EL:
-      self._erase_line()
-    elif r == GA:
-      self._go_ahead()
-    elif r == IAC:
-      self._rx_telnet(r)
-    elif r in (WILL, WONT, DO, DONT):
-      opt = self.__read()
-      if opt == b'':
-        # Try again later
-        self.__unread(r)
-        return
-      #opt = ord(opt)
-      if r == WILL:
-        self._handle_will(opt)
-      elif r == WONT:
-        self._handle_wont(opt)
-      elif r == DO:
-        self._handle_do(opt)
-      elif r == DONT:
-        self._handle_dont(opt)
-      self.log.debug("%s %s", _codename[r][1],_optname.get(opt,opt))
-    elif r == SB:
-      self._state = self._state_sb
-      return
-    else:
-      self._error("Unknown command: %08x", r)
-      return
-
-    self._state = self._state_default
+    pass
 
   def _state_error (self):
     """
@@ -816,42 +754,19 @@ class TelnetHandler (StateMachine):
     """
     Called when there is an error processing the stream
     """
-    self.log.error("ERROR: " + msg)
-    self._state = self._state_error
+    pass
 
   def _state_sb (self):
     """
     State during subnegotiation
     """
-    b = self.__buf
-    o = b''
-    i = 0
-    while i < len(b):
-      c = b[i:i+1]
-      n = b[i+1:i+2]
-      if c == IAC:
-        if n == IAC:
-          i += 2
-          o += IAC
-          continue
-        elif n == SE:
-          # Yay!
-          self._sb(o)
-          self.__buf = self.__buf[i+2:]
-          self._state = self._state_default
-          return
-      o += c
-      i += 1
-    return
+    pass
 
   def _sb (self, sub):
     """
     Called after receiving subnegotiation information
     """
-    s = "[SB|"
-    s += " ".join("%02x" % (x,) for x in sub)
-    s += "|" + repr(sub) + "]"
-    self.log.debug(s)
+    pass
 
   def _break (self):
     """
@@ -869,7 +784,7 @@ class TelnetHandler (StateMachine):
     """
     Called when we recieve a telnet AYT
     """
-    self.send("(Yes, I'm here.)\n\r")
+    pass
 
   def _erase_character (self):
     """
@@ -924,24 +839,19 @@ class TelnetHandler (StateMachine):
     """
     Should be called when stream is starting
     """
-    super(TelnetHandler,self).startup()
     pass
 
   def send_do (self, opt):
-    self.log.debug(">DO %s", _optname.get(opt, opt))
-    self.send(IAC + DO + _chr(opt))
+    pass
 
   def send_dont (self, opt):
-    self.log.debug(">DONT %s", _optname.get(opt, opt))
-    self.send(IAC + DONT + _chr(opt))
+    pass
 
   def send_will (self, opt):
-    self.log.debug(">WILL %s", _optname.get(opt, opt))
-    self.send(IAC + WILL + _chr(opt))
+    pass
 
   def send_wont (self, opt):
-    self.log.debug(">WONT %s", _optname.get(opt, opt))
-    self.send(IAC + WONT + _chr(opt))
+    pass
 
 
 class QTelnetHandler (TelnetHandler):
@@ -983,7 +893,7 @@ class QTelnetHandler (TelnetHandler):
 
     Overridable.
     """
-    return True
+    pass
 
   def _can_he_disable (self, opt):
     """
@@ -993,7 +903,7 @@ class QTelnetHandler (TelnetHandler):
 
     Overridable.
     """
-    return True
+    pass
 
   def _can_we_enable (self, opt):
     """
@@ -1003,7 +913,7 @@ class QTelnetHandler (TelnetHandler):
 
     Overridable.
     """
-    return True
+    pass
 
   def _can_we_disable (self, opt):
     """
@@ -1013,7 +923,7 @@ class QTelnetHandler (TelnetHandler):
 
     Overridable.
     """
-    return True
+    pass
 
   def _notify_us (self, opt, enabled):
     """
@@ -1035,209 +945,49 @@ class QTelnetHandler (TelnetHandler):
     """
     Handle WILL commands according to RF1143
     """
-    if self.him[opt] == NO:
-      if self._can_he_enable(opt):
-        self.him[opt] = YES
-        self.send_do(opt)
-        self._notify_him(opt, True)
-      else:
-        self.send_dont(opt)
-    elif self.him[opt] == YES:
-      pass
-    elif self.him[opt] == WANTNO:
-      if self.himq[opt] == EMPTY:
-        # Error
-        self.him[opt] = NO
-      elif self.himq[opt] == OPPOSITE:
-        # Error
-        self.him[opt] = YES
-        self.himq[opt] = EMPTY
-    elif self.him[opt] == WANTYES:
-      if self.himq[opt] == EMPTY:
-        self.him[opt] = YES
-      elif self.himq[opt] == OPPOSITE:
-        self.him[opt] = WANTNO
-        self.himq[opt] = EMPTY
-        self.send_dont(opt)
+    pass
 
   def _handle_wont (self, opt):
     """
     Handle WONT commands according to RF1143 (mostly)
     """
-    if self.him[opt] == NO:
-      pass
-    elif self.him[opt] == YES:
-      if self._can_he_disable(opt):
-        self.him[opt] = NO
-        self.send_dont(opt)
-        self._notify_him(opt, False)
-      else:
-        self.send_do(opt) # Not in RFC1143
-    elif self.him[opt] == WANTNO:
-      if self.himq[opt] == EMPTY:
-        self.him[opt] = NO
-      elif self.himq[opt] == OPPOSITE:
-        self.him[opt] = WANTYES
-        self.himq[opt] = EMPTY # NONE!?
-        self.send_do(opt)
-    elif self.him[opt] == WANTYES:
-      if self.himq[opt] == EMPTY:
-        self.him[opt] = NO
-      elif self.himq[opt] == OPPOSITE:
-        self.him[opt] = NO
-        self.himq[opt] = EMPTY
+    pass
 
   def _handle_do (self, opt):
     """
     Handle DO commands according to RF1143
     """
-    if self.us[opt] == NO:
-      if self._can_we_enable(opt):
-        self.us[opt] = YES
-        self.send_will(opt)
-        self._notify_us(opt, True)
-      else:
-        self.send_wont(opt)
-    elif self.us[opt] == YES:
-      pass
-    elif self.us[opt] == WANTNO:
-      if self.usq[opt] == EMPTY:
-        # Error
-        self.us[opt] = NO
-      elif self.usq[opt] == OPPOSITE:
-        # Error
-        self.us[opt] = YES
-        self.usq[opt] = EMPTY
-    elif self.us[opt] == WANTYES:
-      if self.usq[opt] == EMPTY:
-        self.us[opt] = YES
-      elif self.usq[opt] == OPPOSITE:
-        self.us[opt] = WANTNO
-        self.usq[opt] = EMPTY
-        self.send_wont(opt)
+    pass
 
   def _handle_dont (self, opt):
     """
     Handle DONT commands according to RF1143
     """
-    if self.us[opt] == NO:
-      pass
-    elif self.us[opt] == YES:
-      if self._can_we_disable(opt):
-        self.us[opt] = NO
-        self.send_wont(opt)
-        self._notify_us(opt, False)
-      else:
-        self.send_will(opt) # Not in RFC1143
-    elif self.us[opt] == WANTNO:
-      if self.usq[opt] == EMPTY:
-        self.us[opt] = NO
-      elif self.usq[opt] == OPPOSITE:
-        self.us[opt] = WANTYES
-        self.usq[opt] = EMPTY # NONE!?
-        self.send_will(opt)
-    elif self.us[opt] == WANTYES:
-      if self.usq[opt] == EMPTY:
-        self.us[opt] = NO
-      elif self.usq[opt] == OPPOSITE:
-        self.us[opt] = NO
-        self.usq[opt] = EMPTY
+    pass
 
   def _ask_for (self, opt):
     """
     Ask him to...
     """
-    if self.him[opt] == NO:
-      self.him[opt] = WANTYES
-      self.send_do(opt)
-    elif self.him[opt] == YES:
-      # Already enabled
-      pass
-    elif self.him[opt] == WANTNO:
-      if self.himq[opt] == EMPTY:
-        #NOTE: This isn't actually following RFC1143.
-        self.himq[opt] = OPPOSITE
-      elif self.himq[opt] == OPPOSITE:
-        # Already asking for this
-        pass
-    elif self.him[opt] == WANTYES:
-      if self.himq[opt] == EMPTY:
-        # Already negotiating
-        pass
-      elif self.himq[opt] == OPPOSITE:
-        self.himq[opt] = EMPTY
+    pass
 
   def _ask_for_not (self, opt):
     """
     Ask him not to...
     """
-    if self.him[opt] == NO:
-      # Already disabled
-      pass
-    elif self.him[opt] == YES:
-      self.him[opt] = WANTNO
-      self.send_dont(opt)
-    elif self.him[opt] == WANTNO:
-      if self.himq[opt] == EMPTY:
-        # Already trying to disable
-        pass
-      elif self.himq[opt] == OPPOSITE:
-        self.himq[opt] = EMPTY
-    elif self.him[opt] == WANTYES:
-      if self.himq[opt] == EMPTY:
-        #NOTE: This isn't actually following RFC1143.
-        self.himq[opt] = OPPOSITE
-      elif self.himq[opt] == OPPOSITE:
-        # Already tryign to disable
-        pass
+    pass
 
   def _ask_to (self, opt):
     """
     We want to...
     """
-    if self.us[opt] == NO:
-      self.us[opt] = WANTYES
-      self.send_will(opt)
-    elif self.us[opt] == YES:
-      # Already enabled
-      pass
-    elif self.us[opt] == WANTNO:
-      if self.usq[opt] == EMPTY:
-        #NOTE: This isn't actually following RFC1143.
-        self.usq[opt] = OPPOSITE
-      elif self.usq[opt] == OPPOSITE:
-        # Already asking for this
-        pass
-    elif self.us[opt] == WANTYES:
-      if self.usq[opt] == EMPTY:
-        # Already negotiating
-        pass
-      elif self.usq[opt] == OPPOSITE:
-        self.usq[opt] = EMPTY
+    pass
 
   def _ask_to_not (self, opt):
     """
     We don't want to...
     """
-    if self.us[opt] == NO:
-      # Already disabled
-      pass
-    elif self.us[opt] == YES:
-      self.us[opt] = WANTNO
-      self.send_wont(opt)
-    elif self.us[opt] == WANTNO:
-      if self.usq[opt] == EMPTY:
-        # Already trying to disable
-        pass
-      elif self.usq[opt] == OPPOSITE:
-        self.usq[opt] = EMPTY
-    elif self.us[opt] == WANTYES:
-      if self.usq[opt] == EMPTY:
-        #NOTE: This isn't actually following RFC1143.
-        self.usq[opt] = OPPOSITE
-      elif self.usq[opt] == OPPOSITE:
-        # Already tryign to disable
-        pass
+    pass
 
 
 class OptTelnetHandler (QTelnetHandler):
@@ -1256,42 +1006,21 @@ class OptTelnetHandler (QTelnetHandler):
 
   def _init_wants (self, want_to = None, want_to_not = None,
                    want_for = None, want_for_not = None):
-    def s (v):
-      if not v: return set()
-      return set(v)
-    self.want_to = s(want_to)
-    self.want_to_not = s(want_to_not)
-    self.want_for = s(want_for)
-    self.want_for_not = s(want_for_not)
+    pass
 
   def startup (self):
-    for x in self.want_to:
-      self._ask_to(x)
-    for x in self.want_to_not:
-      self._ask_to_not(x)
-    for x in self.want_for:
-      self._ask_for(x)
+    pass
 
   def _can_he_enable (self, opt):
-    if opt in self.want_for: return True
-    return FALSE
+    pass
 
   def _can_he_disable (self, opt):
-    if opt in self.want_for: return False
-    return True
+    pass
 
 
 class MyTelnetHandler (OptTelnetHandler):
   def startup (self):
-    self._init_wants(
-        want_to = set([SGA, BINARY, ECHO]),
-        want_to_not = set([LINEMODE]),
-        want_for = set([SGA, SUPPRESS_LOCAL_ECHO, BINARY, TTYPE]),
-        )
-    OptTelnetHandler.startup(self)
-
-    # Should wait until we see this enabled but whatever.
-    self.send(IAC + SB + TTYPE + SEND + IAC + SE)
+    pass
 
 
 class LineEdit (object):
@@ -1311,148 +1040,23 @@ class LineEdit (object):
 
   def do_commit (self):
     #self.erase()
-    self.password_mode = False
-    line = self.__current
-    if self.__current.strip():
-      self.__hist.append(self.__current)
-    self.__current = b''
-    self.__cursor = 0
-    self.__pos = None
-    self._accept_line(line)
+    pass
 
   def do_text (self, text):
-    for c in text:
-      self._do_char(bytes((c,)))
+    pass
 
   def _do_char (self, c):
-    if c == b'\x7f' or c == b'\x08':
-      if self.__cursor == 0:
-        self.send(BELL)
-      else:
-        self.__cursor -= 1
-        self.__current = (self.__current[:self.__cursor] +
-                          self.__current[self.__cursor+1:])
-        self.redraw(1)
-    elif c == b'\r':
-      #self.erase()
-      #self.send(">" + self.__current + "<\n\r")
-      self.do_commit()
-    elif c == b'\n':
-      pass
-    elif c == b'\x03':
-      self.ctrlc()
-    elif c == b'\x01': # ctrl-a
-      self.send(self.term.cub1 * self.__cursor)
-      self.__cursor = 0
-    elif c == b'\x05': # ctrl-e
-      r = len(self.__current) - self.__cursor
-      self.__cursor = len(self.__current)
-      self.send(self.term.cuf1 * r)
-    elif c == _ctrl("W"):
-      self.erase()
-      c = self.__cursor
-      if c >= len(self.__current): c -= 1
-      while c >= 0 and self.__current[c] != b' ':
-        c -= 1
-      while c >= 0 and self.__current[c] == b' ':
-        c -= 1
-      c += 1
-      if c == self.__cursor:
-        self.send(BELL)
-      else:
-        self.__current = self.__current[:c] + self.__current[self.__cursor:]
-        self.__cursor = c
-
-      self.redraw(erase=False)
-    elif c == _ctrl('K'):
-      self.erase()
-      self.__current = self.__current[:self.__cursor]
-      self.redraw(erase=False)
-    elif c < b' ': # control characters
-      pass
-    else:
-      self.__current = (self.__current[:self.__cursor] + c +
-                        self.__current[self.__cursor:])
-      self.__cursor += 1
-      if self.__cursor == len(self.__current):
-        if self.password_mode:
-          self.send(b"*")
-        else:
-          self.send(c)
-      else:
-        self.redraw(-1)
+    pass
 
   def erase (self, o=0):
-    self.send(self.term.cub1 * (self.__cursor+o))
-    self.send(b" " * (len(self.__current)+o))
-    self.send(self.term.cub1 * (len(self.__current)+o))
+    pass
 
   def redraw (self, o=0, erase=True):
     # Totally hacky and sloppy
-    if erase: self.erase(o)
-    if self.password_mode:
-      self.send(b"*" * len(self.__current))
-    else:
-      self.send(self.__current)
-    self.send(self.term.cub1 * len(self.__current))
-    self.send(self.term.cuf1 * self.__cursor)
+    pass
 
   def do_ctl (self, c, n):
-    if isinstance(n, bytes): n = n.decode()
-    if n == 'kcuu1':
-      if self.__pos is None:
-        if not self.__hist:
-          self.send(BELL)
-        else:
-          self.erase()
-          self.__pos = len(self.__hist) - 1
-          self.__current = self.__hist[self.__pos]
-          self.__cursor = len(self.__current)
-          self.redraw(erase=False)
-      else:
-        if self.__pos == 0:
-          self.send(BELL)
-        else:
-          self.erase()
-          self.__pos -= 1
-          self.__current = self.__hist[self.__pos]
-          self.__cursor = len(self.__current)
-          self.redraw(erase=False)
-    elif n == 'kcud1':
-      if self.__pos is None:
-        self.send(BELL)
-      elif self.__pos == len(self.__hist) - 1:
-        self.erase()
-        self.__pos = None
-        self.__current = b''
-        self.__cursor = 0
-        self.redraw(erase=False)
-      else:
-        self.erase()
-        self.__pos += 1
-        self.__current = self.__hist[self.__pos]
-        self.__cursor = len(self.__current)
-        self.redraw(erase=False)
-    elif n == 'kcub1':
-      if self.__cursor == 0:
-        self.send(BELL)
-      else:
-        self.__cursor -= 1
-        self.send(self.term.cub1)
-    elif n == 'kcuf1':
-      if self.__cursor == len(self.__current):
-        self.send(BELL)
-      else:
-        self.__cursor += 1
-        self.send(self.term.cuf1)
-    elif n == 'kdch1':
-      if self.__cursor == len(self.__current):
-        self.send(BELL)
-      else:
-        self.erase()
-        self.__current = (self.__current[:self.__cursor] +
-                          self.__current[1+self.__cursor:])
-        self.redraw(erase=False)
+    pass
 
 
 class TelnetWorker (RecocoIOWorker, MyTelnetHandler, LineEdit):
@@ -1473,52 +1077,20 @@ class TelnetWorker (RecocoIOWorker, MyTelnetHandler, LineEdit):
     self.personality = personality_class(self, **personality_kwargs)
 
   def _sb (self, sub):
-    if sub.startswith(TTYPE + IS):
-      #print "TERMINAL:",sub[2:]
-      try:
-        self.term = CursesCodes(sub[2:])
-        self.term.add_key(b"\x1b[3~", fake='kdch1') # See above
-      except:
-        pass
-      if self.term.smkx: self.send(self.term.smkx)
-      #self.send("\x1b[?67l") # Switch DEL mode?
-    else:
-      super(TelnetWorker,self)._sub(sub)
+    pass
 
   def _handle_close (self):
-    log.info("Client disconnect")
-    super(TelnetWorker, self)._handle_close()
+    pass
     #clients.discard(self)
 
   def _handle_connect (self):
-    log.info("Client connect")
-    super(TelnetWorker, self)._handle_connect()
-    self.startup()
-    #clients.add(self)
-    self.personality._handle_connect()
+    pass
 
   def _accept_line (self, line):
-    if self.personality.decoding:
-      try:
-        line = line.decode(self.personality.decoding)
-        self.personality._handle_line(line)
-      except Exception:
-        self.personality._handle_bad_line(line)
+    pass
 
   def _rx_telnet (self, data):
-    for nc in data:
-      self.__tbuf += bytes((nc,))
-      r = self.term.check_key(self.__tbuf)
-      if r is True:
-        #print "<",self.term.get_name(self.__tbuf),">",
-        n = self.term.get_name(self.__tbuf)
-        self.do_ctl(self.__tbuf, n)
-        self.__tbuf = b''
-      elif r is False:
-        #print self.__tbuf,
-        #print repr(self.__tbuf)
-        self.do_text(self.__tbuf)
-        self.__tbuf = b''
+    pass
 
   def _handle_rx (self):
     self.push(self.read())
@@ -1580,7 +1152,7 @@ class TelnetPersonality (object):
     """
     Erase input data
     """
-    self.worker.erase()
+    pass
 
   def _handle_connect (self):
     """
@@ -1662,142 +1234,13 @@ class PythonTelnetPersonality (TelnetPersonality):
     self.user = None
 
   def _handle_connect (self):
-    self.send(core.banner + "\n")
-    if self.logged_in:
-      self.send(self.ps1)
-    else:
-      self.send("Username: ")
+    pass
 
   def _handle_bad_line (self, line):
-    log.warn("Bad input")
-    self.send("\nBad input!  Try again.\n")
+    pass
 
   def _handle_line (self, line):
-    if not self.logged_in:
-      if self.user is None:
-        self.user = line
-        self.send("\nPassword: ")
-        self.worker.password_mode = True
-        return
-      else:
-        user = self.user
-        self.user = None
-        if user == self.username:
-          if line == self.password:
-            log.debug("User %s logged in", user)
-            self.send("\n\nWelcome!\n" + self.ps1)
-            self.logged_in = True
-            return
-        log.warn("Failed login attempt.")
-        self.send("\nSorry!\n\nUsername: ")
-      return
-
-    self.send("\n")
-    self.buf += line + "\n"
-    import code
-    try:
-      t = self.buf.lstrip()
-      if t and t[-1] == '\n': t = t[:-1]
-      o = code.compile_command(t, "<telnet>")
-    except:
-      self.buf = ''
-      self.send("?Syntax Error\n" + self.ps1)
-      return
-    if o is None:
-      self.send(self.ps2)
-      return
-    self.buf = ''
-
-    import sys
-
-    # Okay, we do something wacky here.  We don't want a telnet user
-    # to accidentally lock up the cooperative thread by, say, doing
-    # an infinite loop.  So we try to turn on the Python tracing
-    # feature.  Usually this is used for implementing debuggers, but
-    # for us, the upshot is that it calls a function when various
-    # events occur.  We don't actually do any real tracing there; we
-    # simply check to see whether a timeout interval has elapsed.
-    # If it has, we raise an exception, which kills whatever was
-    # hanging us up.
-    # The code here appears a bit arcane.  What it's attempting to
-    # protect us from is the fact that gettrace()/settrace() are
-    # implementation specific and may not exist.
-    try:
-      gettrace = getattr(sys, 'gettrace')
-      settrace = getattr(sys, 'settrace')
-      if gettrace(): raise RuntimeError() # Someone already tracing
-    except:
-      gettrace = lambda : None
-      settrace = lambda f : None
-
-    class TimeoutError (RuntimeError):
-      pass
-
-    import time
-    try:
-      timeout = self.variables.get('_telnet_timeout', 1)
-      if timeout is not None:
-        timeout = timeout + time.time()
-    except:
-      timeout = time.time() + 1
-
-    def check_timeout (frame, event, arg):
-      if timeout and time.time() > timeout:
-        raise TimeoutError("\n\n ** Code took too long to complete! **\n"
-            "\n (Adjust _telnet_timeout if desired.)\n")
-      if event == 'call': return check_timeout
-
-    settrace(check_timeout)
-
-    # Redirect standard IO to the telnet session.  May not play nicely
-    # with multiple threads.
-    # Note that we also set stdin to an empty StringIO.  This is because
-    # otherwise doing something that tried to read would try to read from
-    # the controlling terminal, which isn't what we want at all.  So this
-    # effectively disables input.  I think the only way we could add it in
-    # would be to run the Python code in a separate thread (blocking the
-    # cooperative one except during input).  I've actually been thinking
-    # about doing this for the "py" module for a long time (so that code
-    # from the CLI runs in the cooperative context), but haven't ever
-    # gotten around to it.  Note that this doesn't appear to work in PyPy,
-    # but I haven't looked into why yet.
-
-    oldout = sys.stdout
-    olderr = sys.stderr
-    oldin = sys.stdin
-    from io import StringIO
-    sys.stdout = StringIO()
-    sys.stderr = sys.stdout
-    # Sometime in the future something like this may be more useful...
-    #sys.stdout.write = self.send
-    #sys.stderr.write = self.send
-    sys.stdin = StringIO()
-    try:
-      self.interp.runcode(o)
-      r = sys.stdout.getvalue()
-      self.send(r)
-    except TimeoutError as e:
-      # I think this will only actually catch the exception if it happens at
-      # the first scope.  Otherwise, it triggers a stack trace elsewhere.
-      # Either way is fine since both stop execution.  Just be aware that
-      # this exception handler may well not get called.
-      # We print the traceback instead of just a message so that it looks
-      # more similar to when it *doesn't* get caught here.
-      import traceback
-      self.send(traceback.format_exc())
-    except Exception:
-      pass
-    except SystemExit:
-      self.send("Bye bye!\n")
-      self.worker.shutdown()
-      return
-    finally:
-      settrace(None)
-      sys.stdout = oldout
-      sys.stderr = olderr
-      sys.stdin = oldin
-
-    self.send(self.ps1)
+    pass
 
 
 def launch (username = "pox", password = None, port = 2323):
@@ -1806,13 +1249,5 @@ def launch (username = "pox", password = None, port = 2323):
 
   Note that this is dangerous!
   """
-  # Set up logging
-  global log
-  log = core.getLogger()
-
-  kw = {'username':username, 'password':password}
-
-  # Register as a component
-  core.registerNew(TelnetServer, personality = PythonTelnetPersonality,
-                   personality_kwargs = kw, port = int(port))
+  pass
 

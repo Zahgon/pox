@@ -103,7 +103,7 @@ class Entry (object):
 
   @property
   def key (self):
-    return "%s/%s" % (self.ip, self.size)
+    pass
 
   def _handle_garbage (self):
     if self.owner.table.get(self.key) is self:
@@ -124,9 +124,7 @@ class Entry (object):
 
   @property
   def is_stale (self):
-    if self.static: return False
-    if self.ts is None: return False
-    return (time.time() - self.ts) > self.TIMEOUT / 2
+    pass
 
   def refresh (self):
     if self.static: return
@@ -143,13 +141,7 @@ class Entry (object):
       self.ts = time.time()
 
   def fmt (self):
-    s = ''
-    if self.static: s += 'S'
-    if self.local: s += 'L'
-    if self.dev: s += 'D'
-    if s: s = ' ' + s
-    fmt = "[%14s/%-2s via:%-14s hops:%-2s%4s]"
-    return fmt % (self.ip, self.size, self.next_hop, self.metric, s)
+    pass
 
   def __str__ (self):
     s = ''
@@ -205,63 +197,16 @@ class RIPRouter (object):
 
   def get_responses (self, dests, force, static_only=False, mtu=DEFAULT_MTU):
     # 3.10.2
-    outgoing = []
-    for e in self.table.values():
-      if not (e.changed or force): continue
-      if static_only and not e.static: continue
-      re = RIP.RIPEntry()
-      re.address_family = socket.AF_INET
-      re.ip = e.ip
-      re.network_bits = e.size
-      # We never set next_hop; always use us
-      if dests is not None and e.origin in dests:
-        if len(dests) == 1:
-          re.metric = INFINITY # Poisoned reverse
-        else:
-          continue # Split horizon
-      else:
-        re.metric = e.metric
-      outgoing.append(re)
-
-    return self.package_responses(outgoing, mtu=mtu)
+    pass
 
   def package_responses (self, outgoing, mtu):
     """
     Split a bunch of RIP entries into RIP packets.
     """
-    packets = []
-    entries = []
-
-    entry_len = 2+2+4+4+4+4
-    header_len = RIP.rip.MIN_LEN + pkt.ipv4.MIN_LEN + pkt.udp.MIN_LEN
-    # Maybe there will be IP options or something.  Make sure there's some
-    # extra space....
-    header_len += 12
-
-    def add (e=None, force=False):
-      cur = len(entries) * entry_len + header_len
-      if e is not None: cur += entry_len
-      if (force and len(entries) > 0) or (cur >= mtu):
-        ripp = RIP.rip()
-        ripp.version = 2
-        ripp.command = RIP.RIP_RESPONSE
-        ripp.entries.extend(entries)
-        packets.append(ripp)
-        del entries[:]
-      if e is not None: entries.append(e)
-
-    for e in outgoing:
-      add(e)
-
-    add(force=True)
-
-    return packets
+    pass
 
   def _on_triggered_update (self):
-    self.sync_table() # Hacky, but something may have changed.
-    self.triggered_pending = False
-    self.log.debug("Triggered update")
-    self.send_updates(force=False)
+    pass
 
   def trigger_update (self):
     if self.triggered_pending: return
@@ -334,9 +279,7 @@ class RIPRouter (object):
     """
     Mark all entries as having been sent
     """
-    # Mark nothing changed
-    for e in self.table.values():
-      e.changed = False
+    pass
 
   def _get_port_ip_map (self):
     """
@@ -348,12 +291,4 @@ class RIPRouter (object):
     The default implementaton does this by looking through the routing table
     for "dev" entries.
     """
-    direct = {} # iface -> set(ip)
-    for e in self.table.values():
-      if e.dev and not e.local:
-        if e.size != 32: continue
-        if e.dev not in direct:
-          direct[e.dev] = set()
-        direct[e.dev].add(e.ip)
-
-    return direct
+    pass

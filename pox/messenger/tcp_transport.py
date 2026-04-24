@@ -222,14 +222,8 @@ class TCPTransport (Task, Transport):
 
 
 def active (tcp_address, tcp_port = 7790):
-  def start ():
-    t = ActiveTCPTransport(tcp_address, tcp_port)
-    t.start()
-  core.call_when_ready(start, "MessengerNexus", __name__)
+  pass
 
 
 def launch (tcp_address = "0.0.0.0", tcp_port = 7790):
-  def start ():
-    t = TCPTransport(tcp_address, tcp_port)
-    t.start()
-  core.call_when_ready(start, "MessengerNexus", __name__)
+  pass

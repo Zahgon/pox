@@ -74,65 +74,20 @@ class BasicAuthMixin (object):
     """
     Returns True for valid users
     """
-    if self._is_basic_auth_enabled is False: return True
-
-    try:
-      return self.basic_auth_function(self, user, password)
-    except TypeError:
-      return self.basic_auth_function(user, password)
+    pass
 
   @property
   def _is_basic_auth_enabled (self):
-    bae = getattr(self, 'basic_auth_enabled', None)
-    if bae is True: return True
-    if bae is False: return False
-    try:
-      if (self._check_basic_auth.__func__.__code__ is
-          BasicAuthMixin._check_basic_auth.__func__.__code__):
-        authf = getattr(self, 'basic_auth_function', None)
-        if authf is None:
-          self.basic_auth_enabled = False
-          return False
-        return True
-    except Exception:
-      pass
-    return False
+    pass
 
   def _get_auth_realm (self):
-    auth_realm = getattr(self, 'auth_realm', None)
-    if auth_realm is None:
-      try:
-        return ' '.join(self.prefix.replace('"', '').split())
-      except Exception:
-        auth_realm = True # Fallback
-    if auth_realm is True:
-      r = type(self).__name__
-      if r.endswith("Handler"): r = r.rsplit("Handler", 1)[0]
-      return r
-    else:
-      return auth_realm
+    pass
 
   def _send_basic_auth_header (self):
-      self.send_header('WWW-Authenticate',
-                       'Basic realm="%s"' % (self._get_auth_realm(),))
+      pass
 
   def _do_auth (self):
-    if self._is_basic_auth_enabled is False: return True
-
-    auth = self.headers.get("Authorization", "").strip()
-    success = False
-    if auth.lower().startswith("basic "):
-      try:
-        auth = base64.decodestring(auth[6:].strip()).split(':', 1)
-        success = self._check_basic_auth(auth[0], auth[1])
-      except Exception:
-        log.exception("While attempting HTTP basic authentication")
-        pass
-    if not success:
-      self.send_response(401, "Authorization Required")
-      self._send_basic_auth_header()
-      self.end_headers()
-    return success
+    pass
 
 
 
@@ -140,10 +95,4 @@ def basic (__INSTANCE__=None, **kw):
   """
   Lets you add username/password pairs to root of POX webserver
   """
-  from pox.web.webcore import SplitterRequestHandler
-  for k,v in kw.items():
-    SplitterRequestHandler.basic_auth_info[k] = v
-
-  # Since you called this explicitly, force auth on regardless of
-  # whether you actually set any user/password pairs.
-  SplitterRequestHandler.basic_auth_enabled = True
+  pass

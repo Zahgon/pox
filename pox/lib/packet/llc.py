@@ -46,7 +46,7 @@ class llc (packet_base):
 
   @property
   def has_snap (self):
-    return self.oui is not None
+    pass
 
   def __str__ (self):
     #TODO: include field values!
@@ -98,7 +98,7 @@ class llc (packet_base):
 
   @property
   def effective_ethertype (self):
-    return ethernet._get_effective_ethertype(self)
+    pass
 
   @property
   def type (self):
@@ -109,7 +109,7 @@ class llc (packet_base):
     'type' attribute, and for vlan/llc it's in the 'eth_type' attribute.
     We should probably normalize this. For now, we at least have this.
     """
-    return self.eth_type
+    pass
 
   def hdr (self, payload):
     r = struct.pack("!BB", self.dsap, self.ssap)

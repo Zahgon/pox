@@ -45,8 +45,7 @@ class EventLoopExample (Task):
      """
      Takes a second parameter: the GoingUpEvent object (which we ignore)
      """
-     # This causes us to be added to the scheduler's recurring Task queue
-     Task.start(self)
+     pass
 
    def get_sockets(self):
      return []

@@ -25,5 +25,4 @@ See also: config.var
 gvariables = {}
 
 def launch (__INSTANCE__=None, **kw):
-  for k,v in kw.items():
-    gvariables[k] = v
+  pass

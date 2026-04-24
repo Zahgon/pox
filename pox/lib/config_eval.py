@@ -87,11 +87,7 @@ def eval_dict (text, result_type=None, dict_type=dict,
 
   assert eval_dict("this:that number:42")['number'] == 42
   """
-  if result_type is None: result_type = dict_type
-  return _eval_text(text=text, result_type=result_type, dict_type=dict_type,
-                     ignore_commas=ignore_commas, loose_strings=loose_strings,
-                     symbols=symbols, functions=functions,
-                     allow_hyphens=allow_hyphens)
+  pass
 
 
 
@@ -161,7 +157,7 @@ def _eval_text (text, result_type=dict, dict_type=dict,
     return peek_back()
 
   def is_done ():
-    return peek() is DONE
+    pass
 
   def expect (ex):
     tok = peek()

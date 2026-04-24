@@ -18,21 +18,7 @@ from logging.handlers import *
 _formatter = logging.Formatter(logging.BASIC_FORMAT)
 
 def _parse (s):
-  if s.lower() == "none": return None
-  if s.lower() == "false": return False
-  if s.lower() == "true": return True
-  if s.startswith("0x"): return int(s[2:], 16)
-  try:
-    return int(s)
-  except:
-    pass
-  try:
-    return float(s)
-  except:
-    pass
-  if s.startswith('"') and s.endswith('"') and len(s) >= 2:
-    return s[1:-1]
-  return s
+  pass
 
 
 #NOTE: Arguments are not parsed super-intelligently.  The result is that some
@@ -62,88 +48,4 @@ def launch (__INSTANCE__ = None, **kw):
   If a --format is specified, you can also specify a --datefmt="<str>"
   where the string is a strftime format string for date/time stamps.
   """
-
-  if 'format' in kw:
-    df = kw.pop("datefmt", None)
-    formatter = logging.Formatter(kw['format'], datefmt=df)
-    del kw['format']
-    if len(kw) == 0:
-      # Use for the default logger...
-      import pox.core
-      pox.core._default_log_handler.setFormatter(formatter)
-  else:
-    formatter = _formatter
-
-  def standard (use_kw, v, C):
-    # Should use a better function than split, which understands
-    # quotes and the like.
-    if v is True:
-      h = C()
-    else:
-      if use_kw:
-        v = dict([x.split('=',1) for x in v.split(',')])
-        v = {k:_parse(v) for k,v in v.items()}
-        h = C(**v)
-      else:
-        v = [_parse(p) for p in v.split(',')]
-        h = C(*v)
-    h.setFormatter(formatter)
-    logging.getLogger().addHandler(h)
-
-  for _k,v in kw.items():
-    k = _k
-    use_kw = k.startswith("*")
-    if use_kw: k = k[1:]
-    k = k.lower()
-    if k == "no_default" and v:
-      import pox.core
-      logging.getLogger().removeHandler(pox.core._default_log_handler)
-      logging.getLogger().addHandler(logging.NullHandler())
-    elif k == "stderr":
-      standard(use_kw, v, lambda : logging.StreamHandler())
-    elif k == "stdout":
-      import sys
-      standard(use_kw, v, lambda : logging.StreamHandler(sys.stdout))
-    elif k == "file":
-      standard(use_kw, v, logging.FileHandler)
-    elif k == "watchedfile":
-      standard(use_kw, v, WatchedFileHandler)
-    elif k == "rotatingfile":
-      standard(use_kw, v, RotatingFileHandler)
-    elif k == "timedrotatingfile":
-      standard(use_kw, v, TimedRotatingFileHandler)
-    elif k == "socket":
-      standard(use_kw, v, SocketHandler)
-    elif k == "datagram":
-      standard(use_kw, v, DatagramHandler)
-    elif k == "syslog":
-      if v is True:
-        v = []
-        use_kw = False
-      else:
-        v = [_parse(p) for p in v.split(',')]
-      if use_kw:
-        v = dict([x.split('=',1) for x in v])
-        if 'address' in v or 'port' in v:
-          address = ('localhost', SYSLOG_UDP_PORT)
-          v['address'] = (v.get('address', 'localhost'),
-                          v.get('port', SYSLOG_UDP_PORT))
-          if 'port' in v: del v['port']
-        elif 'address' == '' or 'address' == '*':
-          v['address'] = '/dev/log'
-        h = SysLogHandler(**v)
-      else:
-        if len(v) > 1:
-          v[0] = (v[0], v[1])
-          del v[1]
-        elif len(v) > 0:
-          if v[0] == '' or v[0] == '*':
-            v[0] = '/dev/log'
-          else:
-            v[0] = (v[0], SYSLOG_UDP_PORT)
-        h = SysLogHandler(*v)
-      logging.getLogger().addHandler(h)
-    elif k == "http":
-      standard(use_kw, v, HTTPHandler)
-    else:
-      raise TypeError("Invalid argument: " + _k)
+  pass

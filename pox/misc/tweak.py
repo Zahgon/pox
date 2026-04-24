@@ -31,34 +31,4 @@ log = core.getLogger()
 
 
 def launch (key, value=None, __INSTANCE__=None):
-  if "=" in key:
-    if value is not None:
-      raise RuntimeError("Value specified twice")
-    assert value is None
-    key,value = key.split("=",1)
-  elif value is None:
-    raise RuntimeError("You must specify a value with --value=...")
-
-  def try_tweak (mod, obj):
-    mod = ".".join(mod)
-    if mod not in sys.modules: return False
-    m = sys.modules[mod]
-    o = m
-    prev = None
-    for oname in obj:
-      prev = o
-      if not hasattr(o, oname): return False
-      o = getattr(o, oname)
-
-    core.getLogger()
-    log.debug("Tweaking %s in %s from %s to %s", ".".join(obj), mod,
-              repr(getattr(prev,oname)), repr(value))
-
-    setattr(prev, oname, value)
-    return True
-
-  value = eval_one(value)
-
-  modparts = key.split(".")
-  for split_at in range(len(modparts)-1,0,-1):
-    if try_tweak(modparts[:split_at],modparts[split_at:]): break
+  pass

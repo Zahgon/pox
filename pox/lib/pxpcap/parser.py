@@ -37,67 +37,27 @@ class PCapParser (object):
     self.callback = callback
 
   def _packet (self, data):
-    if self.callback:
-      self.callback(data, self)
+    pass
 
   def _unpack (self, format, data, offset = 0):
     return unpack_from(self._prefix + format, data, offset)
 
   def _proc_global_header (self):
-    header_len = 4 + 2 + 2 + 4 + 4 + 4 + 4
-    if len(self._buf) < header_len: return
-
-    magic = self._buf[0:4]
-    header = self._buf[4:header_len]
-
-    if magic == "\xd4\xc3\xb2\xa1":
-      self._prefix = "<"
-    elif magic == "\xa1\xb2\xc3\xd4":
-      self._prefix = ">"
-    else:
-      raise RuntimeError("Wrong magic number")
-
-    major,minor = self._unpack("HH", header[:4])
-    self.version = float("%s.%s" % (major,minor))
-
-    if self.version != 2.4:
-      raise RuntimeError("Unknown PCap version: %s" % (self.version,))
-
-    tz,accuracy,self.snaplen,self.lltype = self._unpack("LLLL", header[4:])
-
-    self._buf = self._buf[header_len:]
-    self._proc = self._proc_header
+    pass
 
   def _proc_header (self):
-    if len(self._buf) < 16: return
-    self._sec_raw,self._usec,self._cap_size, self._wire_size \
-        = self._unpack("LLLL", self._buf[:16])
-    self._buf = self._buf[16:]
-    self._proc = self._proc_packet
+    pass
 
   @property
   def _sec (self):
-    return datetime.fromtimestamp(self._sec_raw)
+    pass
 
   @property
   def _time (self):
-    s = self._sec_raw
-    s += self._usec / 1000000.0
-    return s
+    pass
 
   def _proc_packet (self):
-    if len(self._buf) < self._cap_size: return
-    data = self._buf[:self._cap_size]
-    self._buf = self._buf[self._cap_size:]
-    self._proc = self._proc_header
-    self._packet(data)
+    pass
 
   def feed (self, data):
-    self._buf += data
-
-    s = len(self._buf)
-    while s > 0:
-      self._proc()
-      new_s = len(self._buf)
-      if new_s == s: break
-      s = new_s
+    pass

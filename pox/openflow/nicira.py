@@ -127,7 +127,7 @@ class nicira_base (ofp_vendor_base):
 
     Overide this.
     """
-    return True
+    pass
 
   def _init (self, kw):
     """
@@ -157,13 +157,13 @@ class nicira_base (ofp_vendor_base):
 
     Optionally override this.
     """
-    return len(self._pack_body())
+    pass
 
   def _show (self, prefix):
     """
     Format additional fields as text
     """
-    return ""
+    pass
 
   def __init__ (self, **kw):
     ofp_vendor_base.__init__(self)
@@ -200,13 +200,7 @@ class nicira_base (ofp_vendor_base):
   def __ne__ (self, other): return not self.__eq__(other)
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_vendor_base.show(self, prefix + '  ')
-    outstr += prefix + 'vendor: ' + str(self.vendor) + '\n'
-    outstr += prefix + 'subtype: ' + str(self.subtype) + '\n'
-    outstr += self._show(prefix)
-    return outstr
+    pass
 
 
 class nx_hash_fields (object):
@@ -239,7 +233,7 @@ class nx_flow_mod_table_id (nicira_base):
 
     Overide this.
     """
-    return self.enable == other.enable
+    pass
 
   def _pack_body (self):
     """
@@ -264,13 +258,13 @@ class nx_flow_mod_table_id (nicira_base):
 
     Optionally override this.
     """
-    return len(self._pack_body())
+    pass
 
   def _show (self, prefix):
     """
     Format additional fields as text
     """
-    return prefix + "set: " + str(self.enable) + "\n"
+    pass
 
 
 class ofp_flow_mod_table_id (of.ofp_flow_mod):
@@ -288,16 +282,7 @@ class ofp_flow_mod_table_id (of.ofp_flow_mod):
     Execute wrapped function with table_id temporarily stored as
     MSB of command field.
     """
-    def splice(self, *args):
-      assert self.command <= 0xff
-      self.command |= self.table_id << 8
-      try:
-        retval = func(self, *args)
-      finally:
-        self.table_id = self.command >> 8
-        self.command &= 0xff
-      return retval
-    return splice
+    pass
 
   @splice_table_id
   def pack (self):
@@ -312,24 +297,7 @@ class ofp_flow_mod_table_id (of.ofp_flow_mod):
     return super(ofp_flow_mod_table_id, self).__eq__(other)
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'match: \n'
-    outstr += self.match.show(prefix + '  ')
-    outstr += prefix + 'cookie: ' + str(self.cookie) + '\n'
-    outstr += prefix + 'command: ' + str(self.command) + '\n'
-    outstr += prefix + 'table_id: ' + str(self.table_id) + '\n'
-    outstr += prefix + 'idle_timeout: ' + str(self.idle_timeout) + '\n'
-    outstr += prefix + 'hard_timeout: ' + str(self.hard_timeout) + '\n'
-    outstr += prefix + 'priority: ' + str(self.priority) + '\n'
-    outstr += prefix + 'buffer_id: ' + str(self.buffer_id) + '\n'
-    outstr += prefix + 'out_port: ' + str(self.out_port) + '\n'
-    outstr += prefix + 'flags: ' + str(self.flags) + '\n'
-    outstr += prefix + 'actions: \n'
-    for obj in self.actions:
-      outstr += obj.show(prefix + '  ')
-    return outstr
+    pass
 
 
 class nx_flow_mod (of.ofp_flow_mod, of.ofp_vendor_base):
@@ -453,7 +421,7 @@ class nx_packet_in_format (nicira_base):
 
     Overide this.
     """
-    return self.format == other.format
+    pass
 
   def _pack_body (self):
     """
@@ -474,14 +442,7 @@ class nx_packet_in_format (nicira_base):
     """
     Format additional fields as text
     """
-    s = prefix + "format: "
-    if self.format == NXPIF_NXM:
-      s += "NXM"
-    elif self.format == NXPIF_OPENFLOW10:
-      s += "OF1.0"
-    else:
-      s += str(self.format)
-    return s + "\n"
+    pass
 
 
 NX_ROLE_OTHER = 0
@@ -509,10 +470,10 @@ class nx_role_request (nicira_base):
 
   @property
   def master (self):
-    return self.role == NX_ROLE_MASTER
+    pass
   @property
   def slave (self):
-    return self.role == NX_ROLE_SLAVE
+    pass
   @property
   def other (self):
     return self.role == NX_ROLE_OTHER
@@ -523,7 +484,7 @@ class nx_role_request (nicira_base):
 
     Overide this.
     """
-    return self.role == other.role
+    pass
 
   def _pack_body (self):
     """
@@ -544,10 +505,7 @@ class nx_role_request (nicira_base):
     """
     Format additional fields as text
     """
-    s = prefix + "role: "
-    s += {NX_ROLE_OTHER:"other",NX_ROLE_MASTER:"master",
-        NX_ROLE_SLAVE:"slave"}.get(self.role, str(self.role))
-    return s + "\n"
+    pass
 
 class nx_role_reply (nx_role_request):
   subtype = NXT_ROLE_REPLY
@@ -581,16 +539,7 @@ class nx_action_bundle (of.ofp_action_vendor_base):
     self.dst = None # An NXM type
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.algorithm != other.algorithm: return False
-    if self.fields != other.fields: return False
-    if self.basis != other.basis: return False
-    if self.slave_type != other.slave_type: return False
-    if self.slaves != other.slaves: return False
-    if self.nbits != other.nbits: return False
-    if self.offset != other.offset: return False
-    if self.dst != other.dst: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHHH', self.subtype, self.algorithm, self.fields,
@@ -674,11 +623,7 @@ class nx_action_bundle (of.ofp_action_vendor_base):
     return offset
 
   def _show (self, prefix):
-    s = ''
-    for f in ("subtype algorithm fields basis slave_type nbits offset "
-              "dst").split():
-      s += prefix + ('%s: %s\n' % (f, getattr(self, f, None)))
-    return s
+    pass
 
 
 class nx_output_reg (of.ofp_action_vendor_base):
@@ -691,12 +636,7 @@ class nx_output_reg (of.ofp_action_vendor_base):
     self.max_len = 0
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.offset != other.offset: return False
-    if self.nbits != other.nbits: return False
-    if self.reg != other.reg: return False
-    if self.max_len != other.max_len: return False
-    return True
+    pass
 
   def _pack_body (self):
     if self.nbits is None:
@@ -727,16 +667,10 @@ class nx_output_reg (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 16
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('offset: %s\n' % (self.offset,))
-    s += prefix + ('nbits: %s\n' % (self.nbits,))
-    s += prefix + ('reg: %s\n' % (self.reg,))
-    s += prefix + ('max_len: %s\n' % (self.max_len,))
-    return s
+    pass
 
 
 class nx_reg_move (of.ofp_action_vendor_base):
@@ -750,13 +684,7 @@ class nx_reg_move (of.ofp_action_vendor_base):
     self.src_ofs = 0
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.nbits != other.nbits: return False
-    if self.dst != other.dst: return False
-    if self.dst_ofs != other.dst_ofs: return False
-    if self.src != other.src: return False
-    if self.src_ofs != other.src_ofs: return False
-    return True
+    pass
 
   def _pack_body (self):
     if self.nbits is None:
@@ -787,18 +715,10 @@ class nx_reg_move (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 16
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('offset: %s\n' % (self.offset,))
-    s += prefix + ('nbits: %s\n' % (self.nbits,))
-    s += prefix + ('src_ofs: %s\n' % (self.src_ofs,))
-    s += prefix + ('dst_ofs: %s\n' % (self.dst_ofs,))
-    s += prefix + ('src: %s\n' % (self.src,))
-    s += prefix + ('dst: %s\n' % (self.dst,))
-    return s
+    pass
 
 
 class nx_reg_load (of.ofp_action_vendor_base):
@@ -811,12 +731,7 @@ class nx_reg_load (of.ofp_action_vendor_base):
     self.value = None # Integer or an nxm_entry instance
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.offset != other.offset: return False
-    if self.nbits != other.nbits: return False
-    if self.dst != other.dst: return False
-    if self.value != other.value: return False
-    return True
+    pass
 
   def _pack_body (self):
     value = self.value
@@ -860,16 +775,10 @@ class nx_reg_load (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 16
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('offset: %s\n' % (self.offset,))
-    s += prefix + ('nbits: %s\n' % (self.nbits,))
-    s += prefix + ('dst: %s\n' % (self.dst,))
-    s += prefix + ('value: %s\n' % (self.value,))
-    return s
+    pass
 
 
 class nx_action_controller (of.ofp_action_vendor_base):
@@ -887,11 +796,7 @@ class nx_action_controller (of.ofp_action_vendor_base):
     self.reason = of.OFPR_ACTION
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.max_len != other.max_len: return False
-    if self.controller_id != other.controller_id: return False
-    if self.reason != other.reason: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHHB', self.subtype, self.max_len, self.controller_id,
@@ -906,15 +811,10 @@ class nx_action_controller (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('max_len: %s\n' % (self.max_len,))
-    s += prefix + ('controller_id: %s\n' % (self.controller_id,))
-    s += prefix + ('reason: %s\n' % (self.reason,))
-    return s
+    pass
 
 
 class nx_action_push_mpls (of.ofp_action_vendor_base):
@@ -928,9 +828,7 @@ class nx_action_push_mpls (of.ofp_action_vendor_base):
     # The only alternative for ethertype is MPLS_MC_TYPE (multicast)
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.ethertype != other.ethertype: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHI', self.subtype, self.ethertype, 0) # 4 bytes pad
@@ -942,13 +840,10 @@ class nx_action_push_mpls (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('ethertype: %s\n' % (self.ethertype,))
-    return s
+    pass
 
 
 class nx_action_pop_mpls (of.ofp_action_vendor_base):
@@ -961,9 +856,7 @@ class nx_action_pop_mpls (of.ofp_action_vendor_base):
     self.ethertype = None # Purposely bad
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.ethertype != other.ethertype: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHI', self.subtype, self.ethertype, 0) # 4 bytes pad
@@ -975,13 +868,10 @@ class nx_action_pop_mpls (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('ethertype: %s\n' % (self.ethertype,))
-    return s
+    pass
 
 
 class nx_action_mpls_label (of.ofp_action_vendor_base):
@@ -994,9 +884,7 @@ class nx_action_mpls_label (of.ofp_action_vendor_base):
     self.label = None # Force setting
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.label != other.label: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHI', self.subtype, 0, self.label)
@@ -1007,13 +895,10 @@ class nx_action_mpls_label (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('label: %s\n' % (self.label,))
-    return s
+    pass
 
 
 class nx_action_mpls_tc (of.ofp_action_vendor_base):
@@ -1026,9 +911,7 @@ class nx_action_mpls_tc (of.ofp_action_vendor_base):
     self.tc = None # Purposely bad
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.tc != other.tc: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HBIB', self.subtype, self.tc, 0, 0) # 5 bytes pad
@@ -1040,13 +923,10 @@ class nx_action_mpls_tc (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('tc: %s\n' % (self.tc,))
-    return s
+    pass
 
 
 class nx_action_resubmit (of.ofp_action_vendor_base):
@@ -1057,7 +937,7 @@ class nx_action_resubmit (of.ofp_action_vendor_base):
   """
   @classmethod
   def resubmit (cls, in_port = of.OFPP_IN_PORT):
-    return cls(subtype = NXAST_RESUBMIT, in_port = in_port, table = 0)
+    pass
 
   @classmethod
   def resubmit_table (cls, table = 255, in_port = of.OFPP_IN_PORT):
@@ -1071,10 +951,7 @@ class nx_action_resubmit (of.ofp_action_vendor_base):
     self.table = None   # NXAST_RESUBMIT_TABLE: table to use
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.in_port != other.in_port: return False
-    if self.table != other.table: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHB', self.subtype, self.in_port, self.table)
@@ -1088,14 +965,10 @@ class nx_action_resubmit (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('in_port: %s\n' % (self.in_port,))
-    s += prefix + ('table: %s\n' % (self.table,))
-    return s
+    pass
 
 
 class nx_action_set_tunnel (of.ofp_action_vendor_base):
@@ -1110,9 +983,7 @@ class nx_action_set_tunnel (of.ofp_action_vendor_base):
     self.tun_id = None # Must set
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.tun_id != other.tun_id: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHI', self.subtype, 0, self.tun_id)
@@ -1125,13 +996,10 @@ class nx_action_set_tunnel (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('tub_id: %s\n' % (self.tun_id,))
-    return s
+    pass
 
 
 class nx_action_set_tunnel64 (of.ofp_action_vendor_base):
@@ -1146,9 +1014,7 @@ class nx_action_set_tunnel64 (of.ofp_action_vendor_base):
     self.tun_id = None # Must set
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.tun_id != other.tun_id: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHIQ', self.subtype, 0, 0, self.tun_id)
@@ -1161,13 +1027,10 @@ class nx_action_set_tunnel64 (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 16
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('tub_id: %s\n' % (self.tun_id,))
-    return s
+    pass
 
 
 class nx_action_fin_timeout (of.ofp_action_vendor_base):
@@ -1178,10 +1041,7 @@ class nx_action_fin_timeout (of.ofp_action_vendor_base):
     self.fin_hard_timeout = 1 # New hard timeout, if nonzero.
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.fin_idle_timeout != other.fin_idle_timeout: return False
-    if self.fin_hard_timeout != other.fin_hard_timeout: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHH', self.subtype, self.fin_idle_timeout,
@@ -1196,14 +1056,10 @@ class nx_action_fin_timeout (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    s += prefix + ('fin_idle_timeout: %s\n' % (self.fin_idle_timeout,))
-    s += prefix + ('fin_hard_timeout: %s\n' % (self.fin_hard_timeout,))
-    return s
+    pass
 
 class nx_action_exit (of.ofp_action_vendor_base):
   def _init (self, kw):
@@ -1211,8 +1067,7 @@ class nx_action_exit (of.ofp_action_vendor_base):
     self.subtype = NXAST_EXIT
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!H', self.subtype)
@@ -1226,12 +1081,10 @@ class nx_action_exit (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    return s
+    pass
 
 
 class nx_action_dec_ttl (of.ofp_action_vendor_base):
@@ -1240,8 +1093,7 @@ class nx_action_dec_ttl (of.ofp_action_vendor_base):
     self.subtype = NXAST_DEC_TTL
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!H', self.subtype)
@@ -1254,12 +1106,10 @@ class nx_action_dec_ttl (of.ofp_action_vendor_base):
     return offset
 
   def _body_length (self):
-    return 8
+    pass
 
   def _show (self, prefix):
-    s = ''
-    s += prefix + ('subtype: %s\n' % (self.subtype,))
-    return s
+    pass
 
 
 # -----------------------------------------------------------------------
@@ -1317,22 +1167,13 @@ class nx_action_learn (of.ofp_action_vendor_base):
     """
     Synonym for table_id
     """
-    return self.table_id
+    pass
   @table.setter
   def table (self, value):
-    self.table_id = value
+    pass
 
   def _eq (self, other):
-    if self.subtype != other.subtype: return False
-    if self.idle_timeout != other.idle_timeout: return False
-    if self.hard_timeout != other.hard_timeout: return False
-    if self.priority != other.priority: return False
-    if self.cookie != other.cookie: return False
-    if self.flags != other.flags: return False
-    if self.table_id != other.table_id: return False
-    if self.fin_idle_timeout != other.fin_idle_timeout: return False
-    if self.fin_hard_timeout != other.fin_hard_timeout: return False
-    return True
+    pass
 
   def _pack_body (self):
     p = struct.pack('!HHHHQHBBHH',
@@ -1372,15 +1213,7 @@ class nx_action_learn (of.ofp_action_vendor_base):
     return offset
 
   def _show (self, prefix):
-    s = ''
-    ff = ('idle_timeout hard_timeout priority cookie flags table_id '
-         'fin_idle_timeout fin_hard_timeout').split()
-    for f in ff:
-      s += prefix
-      s += f + ": "
-      s += str(getattr(self, f))
-      s += "\n"
-    return s
+    pass
 
 
 NX_LEARN_SRC_FIELD     = 0
@@ -1454,7 +1287,7 @@ class _field_and_match (object):
 
   @property
   def ofs (self):
-    return struct.unpack_from("!H", self.data, 4)[0]
+    pass
 
   @property
   def field (self):
@@ -1478,7 +1311,7 @@ class nx_learn_src_field (_field_and_match, nx_learn_spec_src):
     """
     Returns a corresponding nx_learn_dst_match
     """
-    return nx_learn_dst_match(self.field, self.ofs, self.n_bits)
+    pass
 
 
 class nx_learn_src_immediate (nx_learn_spec_src):
@@ -1500,15 +1333,15 @@ class nx_learn_src_immediate (nx_learn_spec_src):
 
   @classmethod
   def u8 (cls, value):
-    return cls(struct.pack("!H", value))
+    pass
 
   @classmethod
   def u16 (cls, value):
-    return cls(struct.pack("!H", value))
+    pass
 
   @classmethod
   def u32 (cls, value):
-    return cls(struct.pack("!L", value))
+    pass
 
   def __len__ (self):
     return ((self.n_bits+15) // 16) * 2
@@ -1730,25 +1563,19 @@ class flow_mod_spec (object):
 
 class _nxm_raw (object):
   def _pack_value (self, v):
-    return v
+    pass
   def _unpack_value (self, v):
-    return v
+    pass
 
 
 class _nxm_numeric (object):
   _size_table = [None, "!B", "!H", None, "!L", None, None, None, "!Q"]
 
   def _pack_value (self, v):
-    size = self._size_table[self._nxm_length]
-    return struct.pack(size, v)
+    pass
 
   def _unpack_value (self, v):
-    try:
-      size = self._size_table[self._nxm_length]
-      return struct.unpack(size, v)[0]
-    except:
-      raise RuntimeError("Can't unpack %i bytes for %s"
-                         % (self._nxm_length, self.__class__.__name__))
+    pass
 
 
 class _nxm_tcp_flags (_nxm_numeric):
@@ -1756,11 +1583,7 @@ class _nxm_tcp_flags (_nxm_numeric):
   Allows setting of TCP flags, while sanity checking mask
   """
   def _pack_mask (self, v):
-    assert self._nxm_length == 2
-    assert isinstance(v, int)
-    if (v & 0xf000) != 0:
-      raise RuntimeError("Top bits of TCP flags mask must be 0")
-    return struct.pack("!H", v)
+    pass
 
 
 class _nxm_ip (object):
@@ -1775,37 +1598,17 @@ class _nxm_ip (object):
 
   @property
   def value (self):
-    return self._unpack_value(self._value)
+    pass
   @value.setter
   def value (self, value):
-    if isinstance(value, tuple) or isinstance(value, list):
-      assert len(value) == 2
-      ip = value[0]
-      self.mask = value[1]
-      #if isinstance(mask, (int,long)):
-      #  self.mask = mask
-    elif isinstance(value, str) and len(value)>4 and '/' in value:
-      temp = parse_cidr(value, infer=False)
-      ip = temp[0]
-      self.mask = 32 if temp[1] is None else temp[1]
-    else:
-      ip = value
-
-    self._value = self._pack_value(ip)
+    pass
 
   def _pack_value (self, v):
-    return IPAddr(v, networkOrder=False).toRaw()
+    pass
   def _unpack_value (self, v):
-    return IPAddr(v, networkOrder=True)
+    pass
   def _pack_mask (self, v):
-    if isinstance(v, int):
-      # Assume CIDR
-      if v > 32: v = 32
-      elif v < 0: v = 0
-      n = (0xffFFffFF << (32-v)) & 0xffFFffFF
-      return IPAddr(n, networkOrder=False).toRaw()
-    else:
-      return IPAddr(v).toRaw()
+    pass
   #def _unpack_mask (self, v):
   #  # Special unpacking for CIDR-style?
 
@@ -1824,44 +1627,26 @@ class _nxm_ipv6 (object):
 
   @property
   def value (self):
-    return self._unpack_value(self._value)
+    pass
   @value.setter
   def value (self, value):
-    if isinstance(value, tuple) or isinstance(value, list):
-      assert len(value) == 2
-      ip = value[0]
-      self.mask = value[1]
-    elif isinstance(value, str):
-      ip,mask = IPAddr6.parse_cidr(value, allow_host = True)
-      #self.mask = 128 if mask is None else mask
-      self.mask = mask
-    else:
-      ip = value
-
-    self._value = self._pack_value(ip)
+    pass
 
   def _pack_value (self, v):
-    return IPAddr6(v).raw
+    pass
   def _unpack_value (self, v):
-    return IPAddr6(v, raw=True)
+    pass
   def _pack_mask (self, v):
-    if isinstance(v, int):
-      # Assume CIDR
-      if v > 128: v = 128
-      elif v < 0: v = 0
-      n = (((1<<128)-1) << (128-v)) & ((1<<128)-1)
-      return IPAddr6.from_num(n).raw
-    else:
-      return IPAddr6(v).raw
+    pass
 #  def _unpack_mask (self, v):
 #    # Special unpacking for CIDR-style?
 
 
 class _nxm_ether (object):
   def _pack_value (self, v):
-    return EthAddr(v).toRaw()
+    pass
   def _unpack_value (self, v):
-    return EthAddr(v)
+    pass
 
 
 _nxm_type_to_class = {}
@@ -1886,10 +1671,10 @@ class nxm_entry (object):
 
   @property
   def nxm_vendor (self):
-    return self._nxm_type >> 7
+    pass
   @property
   def nxm_field (self):
-    return self._nxm_type & 0x7f
+    pass
 
   @staticmethod
   def unpack_header (raw, offset):
@@ -1970,45 +1755,36 @@ class nxm_entry (object):
     # Calculating length is slightly tricky with mask omission, etc.,
     # so just pack it and find out, rather than duplicate the logic
     # here.
-    return len(self.pack(omittable))
+    pass
 
   def __len__ (self):
     return self.get_length()
 
   def _unpack_mask (self, m):
-    return self._unpack_value(m)
+    pass
   def _pack_mask (self, m):
-    return self._pack_value(m)
+    pass
 
   @property
   def is_reg (self):
-    return False
+    pass
   @property
   def allow_mask (self):
-    return False
+    pass
 
   @property
   def value (self):
-    return self._unpack_value(self._value)
+    pass
   @value.setter
   def value (self, value):
-    self._value = self._pack_value(value)
+    pass
 
   @property
   def mask (self):
-    if self._mask is None: return None
-    return self._unpack_mask(self._mask)
+    pass
   @mask.setter
   def mask (self, value):
-    if self.allow_mask is False:
-      if value is not None:
-        raise RuntimeError("entry has no mask")
-    if value is None:
-      # This would normally be up to the pack function, but we add it
-      # here as a special case
-      self._mask = None
-    else:
-      self._mask = self._pack_mask(value)
+    pass
 
   def __eq__ (self, other):
     if type(self) != type(other): return False
@@ -2073,7 +1849,7 @@ class _nxm_numeric_entry (_nxm_numeric, nxm_entry):
 class _nxm_maskable (object):
   @property
   def allow_mask (self):
-    return True
+    pass
 
 class _nxm_maskable_numeric_entry (_nxm_maskable, _nxm_numeric_entry):
   pass
@@ -2081,12 +1857,12 @@ class _nxm_maskable_numeric_entry (_nxm_maskable, _nxm_numeric_entry):
 class _nxm_reg (_nxm_maskable_numeric_entry):
   @property
   def is_reg (self):
-    return True
+    pass
 
 class NXM_GENERIC (_nxm_raw, nxm_entry):
   @property
   def allow_mask (self):
-    return True
+    pass
 
   def __str__ (self):
     r = "NXM_%08x_%i" % (self.nxm_vendor, self.nxm_field)
@@ -2253,7 +2029,7 @@ def NXM_IS_NX_REG (o):
   """
   Simulates macro from OVS
   """
-  return o.is_reg
+  pass
 
 
 # -----------------------------------------------------------------------
@@ -2334,16 +2110,13 @@ class nx_async_config (nicira_base):
     self.flow_removed_mask_slave = 0
 
   def set_packet_in (self, bit, master=True, slave=True):
-    if master: self.packet_in_mask |= bit
-    if slave: self.packet_in_mask_slave |= bit
+    pass
 
   def set_port_status (self, bit, master=True, slave=True):
-    if master: self.port_status_mask |= bit
-    if slave: self.port_status_mask_slave |= bit
+    pass
 
   def set_flow_removed (self, bit, master=True, slave=True):
-    if master: selfflow_removed_mask |= bit
-    if slave: self.flow_removed_mask_slave |= bit
+    pass
 
   def _eq (self, other):
     """
@@ -2351,12 +2124,7 @@ class nx_async_config (nicira_base):
 
     Overide this.
     """
-    for a in "packet_in port_status flow_removed".split():
-      a += "_mask"
-      if getattr(self, a) != getattr(other, a): return False
-      a += "_slave"
-      if getattr(self, a) != getattr(other, a): return False
-    return True
+    pass
 
   def _pack_body (self):
     return struct.pack("!IIIIII",
@@ -2405,16 +2173,14 @@ class nxt_packet_in (nicira_base, of.ofp_packet_in):
 
   @property
   def in_port (self):
-    return self.match.of_in_port
+    pass
 
   @property
   def match (self):
-    if self._match is None:
-      self._match = nx_match()
-    return self._match
+    pass
   @match.setter
   def match (self, v):
-    self._match = v
+    pass
 
   def pack (self):
     assert self._assert()
@@ -2436,13 +2202,7 @@ class nxt_packet_in (nicira_base, of.ofp_packet_in):
 
   @property
   def packed_data (self):
-    if self.data is None:
-      return b''
-    if hasattr(self.data, 'pack'):
-      # I don't think this is ever encountered...
-      return self.data.pack()
-    else:
-      return self.data
+    pass
 
   def unpack (self, raw, offset=0):
     _offset = offset
@@ -2485,19 +2245,7 @@ class nxt_packet_in (nicira_base, of.ofp_packet_in):
   def __ne__ (self, other): return not self.__eq__(other)
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'buffer_id: ' + str(self.buffer_id) + '\n'
-    outstr += prefix + 'total_len: ' + str(self._total_len) + '\n'
-    outstr += prefix + 'reason: ' + str(self.reason) + '\n'
-    outstr += prefix + 'table_id: ' + str(self.table_id) + '\n'
-    outstr += prefix + 'match: ' + str(self.match) + '\n'
-    outstr += prefix + 'cookie: ' + str(self.cookie) + '\n'
-    #from pox.lib.util import hexdump
-    #outstr += prefix + 'data: ' + hexdump(self.data) + '\n'
-    outstr += prefix + 'datalen: ' + str(len(self.data)) + '\n'
-    return outstr
+    pass
 
   def field (self, t):
     for i in self.match:
@@ -2589,16 +2337,11 @@ class nx_match (object):
     return ','.join(str(m) for m in self._parts)
 
   def show (self, prefix = ''):
-    return prefix + str(self)
+    pass
 
   @property
   def _map (self):
-    if self._cache is None:
-      self._cache = {}
-      for i in self._parts:
-        assert i._nxm_type not in self._cache
-        self._cache[i._nxm_type] = i
-    return self._cache
+    pass
 
   def __len__ (self):
     return sum(len(x) for x in self._parts)
@@ -2651,12 +2394,7 @@ class nx_match (object):
     self._parts.insert(position, item)
 
   def insert_after (self, position, item):
-    if isinstance(t, nxm_entry) or _issubclass(t, nxm_entry):
-      position = self.find(position)
-      if position == None:
-        self.append(item)
-        return
-    self._parts.insert(position+1, item)
+    pass
 
   def append (self, item):
     """
@@ -2788,26 +2526,11 @@ class nx_match (object):
 _old_unpacker = None
 
 def _unpack_nx_vendor (raw, offset):
-  v = _unpack("!L", raw, offset + 8)[1][0]
-  if v != NX_VENDOR_ID:
-    return _old_unpacker(raw, offset)
-  subtype = _unpack("!L", raw, offset+8+4)[1][0]
-  if subtype == NXT_PACKET_IN:
-    npi = nxt_packet_in()
-    return npi.unpack(raw, offset)[0], npi
-  elif subtype == NXT_ROLE_REPLY:
-    nrr = nx_role_reply()
-    return nrr.unpack(raw, offset)[0], nrr
-  else:
-    print("NO UNPACKER FOR",subtype)
-    return _old_unpacker(raw, offset)
+  pass
 
 
 def _init_unpacker ():
-  global _old_unpacker
-  from pox.openflow.of_01 import unpackers
-  _old_unpacker = unpackers[of.OFPT_VENDOR]
-  unpackers[of.OFPT_VENDOR] = _unpack_nx_vendor
+  pass
 
 
 from pox.openflow import PacketIn
@@ -2831,32 +2554,14 @@ class NiciraOpenFlowHandlers (DefaultOpenFlowHandlers):
   """
   @staticmethod
   def handle_VENDOR (con, msg):
-      if isinstance(msg, nxt_packet_in) and core.NX.convert_packet_in:
-        e = con.ofnexus.raiseEventNoErrors(PacketIn, con, msg)
-        if e is None or e.halt != True:
-          con.raiseEventNoErrors(PacketIn, con, msg)
-      elif isinstance(msg, nx_role_reply):
-        e = con.ofnexus.raiseEventNoErrors(RoleReply, con, msg)
-        if e is None or e.halt != True:
-          con.raiseEventNoErrors(RoleReply, con, msg)
-      else:
-        DefaultOpenFlowHandlers.handle_VENDOR(con, msg)
+      pass
 
 # Handlers used for switches with Nicira extensions
 _nicira_handlers = NiciraOpenFlowHandlers()
 
 
 def _handle_ConnectionHandshakeComplete (event):
-  desc = event.connection.description
-  if not desc: return
-  if "Open vSwitch" not in event.connection.description.hw_desc: return
-
-  # We think we have Nicira extensions.  Log message and do initialization.
-  log = core.getLogger("nicira")
-  log.debug("%s is %s %s", event.connection, desc.hw_desc, desc.sw_desc)
-
-  event.connection.handlers = _nicira_handlers.handlers
-  event.connection._eventMixin_events.add(RoleReply)
+  pass
 
 
 class NX (object):
@@ -2867,15 +2572,4 @@ class NX (object):
 
 
 def launch (convert_packet_in = False):
-  _init_unpacker()
-
-  core.openflow._eventMixin_events.add(RoleReply)
-
-  core.openflow.addListenerByName("ConnectionHandshakeComplete",
-                                  _handle_ConnectionHandshakeComplete)
-
-  nx = NX()
-  if convert_packet_in:
-    nx.convert_packet_in = True
-
-  core.register("NX", nx)
+  pass

@@ -149,8 +149,7 @@ class tcp_opt (object):
 _mptcp_opts = {} # type -> class
 def _register_mptcp_opt (type):
   def register_subtype (cls):
-    _mptcp_opts[type] = cls
-    return cls
+    pass
   return register_subtype
 
 
@@ -243,11 +242,11 @@ class mp_capable_opt (mptcp_opt):
 
   @property
   def checksum_required (self):
-    return self.flags & (1<<7)
+    pass
 
   @property
   def use_hmac_sha1 (self):
-    return self.flags & (1<<0)
+    pass
 
   @classmethod
   def unpack_new (cls, buf, offset = 0):
@@ -301,20 +300,19 @@ class mp_join_opt (mptcp_opt):
 
   @property
   def SYN_expected (self):
-    return self.phase in (1,2)
+    pass
 
   @property
   def ACK_expected (self):
-    return self.phase in (2,3)
+    pass
 
   @property
   def backup (self):
-    return self.flags & (1<<0)
+    pass
 
   @property
   def has_full_hmac (self):
-    if not self.shmac: return False
-    return len(self.shmac) == 20
+    pass
 
   @classmethod
   def unpack_new (cls, buf, offset = 0):
@@ -383,27 +381,23 @@ class mp_dss_opt (mptcp_opt):
 
   @property
   def has_ack (self):
-    return self.flags & (1<<0)
+    pass
 
   @property
   def ack_length (self):
-    if not self.has_ack:
-      return 0
-    return 8 if self.flags & (1<<1) else 4
+    pass
 
   @property
   def has_dsn (self):
-    return self.flags & (1<<2)
+    pass
 
   @property
   def dsn_length (self):
-    if not self.has_dsn:
-      return 0
-    return 8 if self.flags & (1<<3) else 4
+    pass
 
   @property
   def FIN (self):
-    return self.flags & (1<<4)
+    pass
 
   @classmethod
   def unpack_new (cls, buf, offset = 0):
@@ -488,41 +482,41 @@ class tcp (packet_base):
   CWR_flag = 0x80
 
   @property
-  def FIN (self): return True if self.flags & self.FIN_flag else False
+  pass
   @property
-  def SYN (self): return True if self.flags & self.SYN_flag else False
+  pass
   @property
-  def RST (self): return True if self.flags & self.RST_flag else False
+  pass
   @property
-  def PSH (self): return True if self.flags & self.PSH_flag else False
+  pass
   @property
-  def ACK (self): return True if self.flags & self.ACK_flag else False
+  pass
   @property
-  def URG (self): return True if self.flags & self.URG_flag else False
+  pass
   @property
-  def ECN (self): return True if self.flags & self.ECN_flag else False
+  pass
   @property
-  def CWR (self): return True if self.flags & self.CWR_flag else False
+  pass
 
   @FIN.setter
-  def FIN (self, value): self._setflag(self.FIN_flag, value)
+  pass
   @SYN.setter
-  def SYN (self, value): self._setflag(self.SYN_flag, value)
+  pass
   @RST.setter
-  def RST (self, value): self._setflag(self.RST_flag, value)
+  pass
   @PSH.setter
-  def PSH (self, value): self._setflag(self.PSH_flag, value)
+  pass
   @ACK.setter
-  def ACK (self, value): self._setflag(self.ACK_flag, value)
+  pass
   @URG.setter
-  def URG (self, value): self._setflag(self.URG_flag, value)
+  pass
   @ECN.setter
-  def ECN (self, value): self._setflag(self.ECN_flag, value)
+  pass
   @CWR.setter
-  def CWR (self, value): self._setflag(self.CWR_flag, value)
+  pass
 
   def _setflag (self, flag, value):
-    self.flags = (self.flags & ~flag) | (flag if value else 0)
+    pass
 
   def __init__ (self, raw=None, prev=None, **kw):
     packet_base.__init__(self)
@@ -569,15 +563,10 @@ class tcp (packet_base):
     return s
 
   def find_option (self, option):
-    for i,o in enumerate(self.options):
-      if o.type == option:
-        return i
-    return None
+    pass
 
   def get_option (self, option):
-    i = self.find_option(option)
-    if i is None: return None
-    return self.options[i]
+    pass
 
   def parse_options (self, raw):
 
@@ -649,7 +638,7 @@ class tcp (packet_base):
 
   @property
   def len (self):
-    return self.tcplen - self.hdr_len
+    pass
 
   def __len__ (self):
     return self.len

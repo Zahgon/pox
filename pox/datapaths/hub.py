@@ -45,15 +45,8 @@ class Hub (object):
     self._ports.add(p)
 
   def _handle_RXData (self, event):
-    self.rx_bytes += len(event.data)
-    for port in self._ports:
-      if port is event.interface: continue
-      port.send(event.data)
+    pass
 
 
 def launch (ports):
-  ports = ports.replace(","," ").split()
-  l = Hub()
-  core.register("hub", l)
-  for p in ports:
-    l.add_port(p)
+  pass

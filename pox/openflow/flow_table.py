@@ -55,32 +55,17 @@ class TableEntry (object):
 
   @staticmethod
   def from_flow_mod (flow_mod):
-    return TableEntry(priority=flow_mod.priority,
-                      cookie=flow_mod.cookie,
-                      idle_timeout=flow_mod.idle_timeout,
-                      hard_timeout=flow_mod.hard_timeout,
-                      flags=flow_mod.flags,
-                      match=flow_mod.match,
-                      actions=flow_mod.actions,
-                      buffer_id=flow_mod.buffer_id)
+    pass
 
   def to_flow_mod (self, flags=None, **kw):
-    if flags is None: flags = self.flags
-    return ofp_flow_mod(priority=self.priority,
-                        cookie=self.cookie,
-                        match=self.match,
-                        idle_timeout=self.idle_timeout,
-                        hard_timeout=self.hard_timeout,
-                        actions=self.actions,
-                        buffer_id=self.buffer_id,
-                        flags=flags, **kw)
+    pass
 
   @property
   def effective_priority (self):
     """
     Exact matches effectively have an "infinite" priority
     """
-    return self.priority if self.match.is_wildcarded else (1<<16) + 1
+    pass
 
   def is_matched_by (self, match, priority=None, strict=False, out_port=None):
     """
@@ -91,13 +76,7 @@ class TableEntry (object):
     If out_port is any value besides None, the the flow entry must contain an
     output action to the specified port.
     """
-    match_a = lambda a: isinstance(a, ofp_action_output) and a.port == out_port
-    port_matches = (out_port is None) or any(match_a(a) for a in self.actions)
-
-    if strict:
-      return port_matches and self.match == match and self.priority == priority
-    else:
-      return port_matches and match.matches_with_wildcards(self.match)
+    pass
 
   def touch_packet (self, byte_count, now=None):
     """
@@ -106,31 +85,19 @@ class TableEntry (object):
     Updates both the cumulative given byte counts of packets encountered and
     the expiration timer.
     """
-    if now is None: now = time.time()
-    self.byte_count += byte_count
-    self.packet_count += 1
-    self.last_touched = now
+    pass
 
   def is_idle_timed_out (self, now=None):
-    if now is None: now = time.time()
-    if self.idle_timeout > 0:
-      if (now - self.last_touched) > self.idle_timeout:
-        return True
-    return False
+    pass
 
   def is_hard_timed_out (self, now=None):
-    if now is None: now = time.time()
-    if self.hard_timeout > 0:
-      if (now - self.created) > self.hard_timeout:
-        return True
-    return False
+    pass
 
   def is_expired (self, now=None):
     """
     Tests whether this flow entry is expired due to its idle or hard timeout
     """
-    if now is None: now = time.time()
-    return self.is_idle_timed_out(now) or self.is_hard_timed_out(now)
+    pass
 
   def __str__ (self):
     return type(self).__name__ + "\n  " + self.show()
@@ -139,47 +106,14 @@ class TableEntry (object):
     return "TableEntry(" + self.show() + ")"
 
   def show (self):
-    outstr = ''
-    outstr += "priority=%s, " % self.priority
-    outstr += "cookie=%x, " % self.cookie
-    outstr += "idle_timeout=%d, " % self.idle_timeout
-    outstr += "hard_timeout=%d, " % self.hard_timeout
-    outstr += "match=<%s>, " % ((self.match.show().replace("\n"," ").strip()
-                               if self.match else "Empty"),)
-    outstr += "actions=%s, " % (self.actions,)
-    outstr += "buffer_id=%s" % str(self.buffer_id)
-    return outstr
+    pass
 
   def flow_stats (self, now=None):
-    if now is None: now = time.time()
-    dur_nsec,dur_sec = math.modf(now - self.created)
-    return ofp_flow_stats(match=self.match,
-                          duration_sec=int(dur_sec),
-                          duration_nsec=int(dur_nsec * 1e9),
-                          priority=self.priority,
-                          idle_timeout=self.idle_timeout,
-                          hard_timeout=self.hard_timeout,
-                          cookie=self.cookie,
-                          packet_count=self.packet_count,
-                          byte_count=self.byte_count,
-                          actions=self.actions)
+    pass
 
   def to_flow_removed (self, now=None, reason=None):
     #TODO: Rename flow_stats to to_flow_stats and refactor?
-    if now is None: now = time.time()
-    dur_nsec,dur_sec = math.modf(now - self.created)
-    fr = ofp_flow_removed()
-    fr.match = self.match
-    fr.cookie = self.cookie
-    fr.priority = self.priority
-    fr.reason = reason
-    fr.duration_sec = int(dur_sec)
-    fr.duration_nsec = int(dur_nsec * 1e9)
-    fr.idle_timeout = self.idle_timeout
-    fr.hard_timeout = self.hard_timeout
-    fr.packet_count = self.packet_count
-    fr.byte_count = self.byte_count
-    return fr
+    pass
 
 
 class FlowTableModification (Event):
@@ -216,7 +150,7 @@ class FlowTable (EventMixin):
 
   @property
   def entries (self):
-    return self._table
+    pass
 
   def __len__ (self):
     return len(self._table)
@@ -247,68 +181,29 @@ class FlowTable (EventMixin):
     self.raiseEvent(FlowTableModification(added=[entry]))
 
   def remove_entry (self, entry, reason=None):
-    assert isinstance(entry, TableEntry)
-    self._table.remove(entry)
-    self._dirty()
-    self.raiseEvent(FlowTableModification(removed=[entry], reason=reason))
+    pass
 
   def matching_entries (self, match, priority=0, strict=False, out_port=None):
-    entry_match = lambda e: e.is_matched_by(match, priority, strict, out_port)
-    return [ entry for entry in self._table if entry_match(entry) ]
+    pass
 
   def flow_stats (self, match, out_port=None, now=None):
-    mc_es = self.matching_entries(match=match, strict=False, out_port=out_port)
-    return [ e.flow_stats(now) for e in mc_es ]
+    pass
 
   def aggregate_stats (self, match, out_port=None):
-    mc_es = self.matching_entries(match=match, strict=False, out_port=out_port)
-    packet_count = 0
-    byte_count = 0
-    flow_count = 0
-    for entry in mc_es:
-      packet_count += entry.packet_count
-      byte_count += entry.byte_count
-      flow_count += 1
-    return ofp_aggregate_stats(packet_count=packet_count,
-                               byte_count=byte_count,
-                               flow_count=flow_count)
+    pass
 
   def _remove_specific_entries (self, flows, reason=None):
     #for entry in flows:
     #  self._table.remove(entry)
     #self._table = [entry for entry in self._table if entry not in flows]
-    if not flows: return
-    self._dirty()
-    remove_flows = set(flows)
-    i = 0
-    while i < len(self._table):
-      entry = self._table[i]
-      if entry in remove_flows:
-        del self._table[i]
-        remove_flows.remove(entry)
-        if not remove_flows: break
-      else:
-        i += 1
-    assert len(remove_flows) == 0
-    self.raiseEvent(FlowTableModification(removed=flows, reason=reason))
+    pass
 
   def remove_expired_entries (self, now=None):
-    idle = []
-    hard = []
-    if now is None: now = time.time()
-    for entry in self._table:
-      if entry.is_idle_timed_out(now):
-        idle.append(entry)
-      elif entry.is_hard_timed_out(now):
-        hard.append(entry)
-    self._remove_specific_entries(idle, OFPRR_IDLE_TIMEOUT)
-    self._remove_specific_entries(hard, OFPRR_HARD_TIMEOUT)
+    pass
 
   def remove_matching_entries (self, match, priority=0, strict=False,
                                out_port=None, reason=None):
-    remove_flows = self.matching_entries(match, priority, strict, out_port)
-    self._remove_specific_entries(remove_flows, reason=reason)
-    return remove_flows
+    pass
 
   def entry_for_packet (self, packet, in_port):
     """
@@ -317,14 +212,7 @@ class FlowTable (EventMixin):
     Returns the highest priority flow table entry that matches the given packet
     on the given in_port, or None if no matching entry is found.
     """
-    packet_match = ofp_match.from_packet(packet, in_port, spec_frags = True)
-
-    for entry in self._table:
-      if entry.match.matches_with_wildcards(packet_match,
-                                            consider_other_wildcards=False):
-        return entry
-
-    return None
+    pass
 
   def check_for_overlapping_entry (self, in_entry):
     """
@@ -333,22 +221,4 @@ class FlowTable (EventMixin):
     Returns true if there is an overlap, false otherwise. Since the table is
     sorted, there is only a need to check a certain portion of it.
     """
-    #NOTE: Assumes that entries are sorted by decreasing effective_priority
-    #NOTE: Ambiguous whether matching should be based on effective_priority
-    #      or the regular priority.  Doing it based on effective_priority
-    #      since that's what actually affects packet matching.
-    #NOTE: We could improve performance by doing a binary search to find the
-    #      right priority entries.
-
-    priority = in_entry.effective_priority
-
-    for e in self._table:
-      if e.effective_priority < priority:
-        break
-      elif e.effective_priority > priority:
-        continue
-      else:
-        if e.is_matched_by(in_entry.match) or in_entry.is_matched_by(e.match):
-          return True
-
-    return False
+    pass

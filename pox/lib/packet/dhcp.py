@@ -146,31 +146,7 @@ class dhcp(packet_base):
         self._init(kw)
 
     def _to_str(self):
-        s  = '[DHCP op:'+str(self.op)
-        s += ' htype:'+str(self.htype)
-        s += ' hlen:'+str(self.hlen)
-        s += ' hops:'+str(self.hops)
-        s += ' xid:'+str(self.xid)
-        s += ' secs:'+str(self.secs)
-        s += ' flags:'+str(self.flags)
-        s += ' ciaddr:'+str(self.ciaddr)
-        s += ' yiaddr:'+str(self.yiaddr)
-        s += ' siaddr:'+str(self.siaddr)
-        s += ' giaddr:'+str(self.giaddr)
-        s += ' chaddr:'
-        if isinstance(self.chaddr, EthAddr):
-            s += str(self.chaddr)
-        elif self.chaddr is not None:
-            s += ' '.join(["{0:02x}".format(x) for x in self.chaddr])
-        s += ' magic:'+' '.join(
-            ["{0:02x}".format(ord(x)) for x in self.magic])
-        #s += ' options:'+' '.join(["{0:02x}".format(ord(x)) for x in
-        #                          self._raw_options])
-        if len(self.options):
-          s += ' options:'
-          s += ','.join(repr(x) for x in self.options.values())
-        s += ']'
-        return s
+        pass
 
     def parse(self, raw):
         assert isinstance(raw, bytes)
@@ -328,23 +304,14 @@ class dhcp(packet_base):
         In general, a much better way to add options should just be
         to add them to the .options dictionary.
         """
-
-        self._raw_options += chr(code)
-        if length is None:
-            if val is None:
-                return
-            length = len(val)
-        self._raw_options += chr(length)
-        self._raw_options += val
+        pass
 
     @property
     def msg_type (self):
         """
         DHCP message type or None
         """
-        opt = self.options.get(self.MSG_TYPE_OPT)
-        if opt is None: return None
-        return opt.type
+        pass
 
 
 def dhcp_option_def (msg_type):
@@ -369,11 +336,7 @@ class DHCPOption (object):
 
   @property
   def _name (self):
-    n = type(self).__name__
-    if n.startswith("DHCP"): n = n[4:]
-    if n.endswith("Option"): n = n[:-6]
-    if n == "": return "Option"
-    return n
+    pass
 
 class DHCPRawOption (DHCPOption):
   def __init__ (self, data = b'', bad = False):
@@ -450,8 +413,7 @@ class DHCPIPsOptionBase (DHCPOption):
 
   @property
   def addr (self):
-    if len(self.addrs) == 0: return None
-    return self.addrs[0]
+    pass
 
   def __repr__ (self):
     return "%s(%s)" % (self._name, self.addrs)

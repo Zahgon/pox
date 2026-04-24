@@ -52,14 +52,10 @@ class GephiHTTPWorker (RecocoIOWorker):
     self._state = self.HEADER
 
   def _handle_close (self):
-    log.info("Client disconnect")
-    super(GephiHTTPWorker, self)._handle_close()
-    clients.discard(self)
+    pass
 
   def _handle_connect (self):
-    log.info("Client connect")
-    super(GephiHTTPWorker, self)._handle_connect()
-    clients.add(self)
+    pass
 
   def _handle_rx (self):
     self.data += self.read().replace("\r", "")
@@ -128,14 +124,10 @@ def ae (a, b):
   return {'ae':{a+"_"+b:{'source':a,'target':b,'directed':False}}}
 
 def de (a, b):
-  a = str(a)
-  b = str(b)
-  if a > b:
-    a,b=b,a
-  return {'de':{a+"_"+b:{}}}
+  pass
 
 def dn (n):
-  return {'dn':{str(n):{}}}
+  pass
 
 def clear ():
   return {'dn':{'filter':'ALL'}}
@@ -149,9 +141,7 @@ class GephiTopo (object):
     self.hosts = {} # mac -> dpid
 
   def _handle_core_ComponentRegistered (self, event):
-    if event.name == "host_tracker":
-      event.component.addListenerByName("HostEvent",
-          self.__handle_host_tracker_HostEvent)
+    pass
 
   def send (self, data):
     for c in clients:
@@ -175,72 +165,19 @@ class GephiTopo (object):
 
   def __handle_host_tracker_HostEvent (self, event):
     # Name is intentionally mangled to keep listen_to_dependencies away
-    h = str(event.entry.macaddr)
-    s = dpid_to_str(event.entry.dpid)
-
-    if event.leave:
-      if h in self.hosts:
-        if s in self.switches:
-          self.send(de(h,s))
-        self.send(dn(h))
-        del self.hosts[h]
-    else:
-      if h not in self.hosts:
-        self.hosts[h] = s
-        self.send(an(h, kind='host'))
-        if s in self.switches:
-          self.send(ae(h, s))
-        else:
-          log.warn("Missing switch")
+    pass
 
   def _handle_openflow_ConnectionUp (self, event):
-    s = dpid_to_str(event.dpid)
-    if s not in self.switches:
-      self.send(an(s))
-      self.switches.add(s)
+    pass
 
   def _handle_openflow_ConnectionDown (self, event):
-    s = dpid_to_str(event.dpid)
-    if s in self.switches:
-      self.send(dn(s))
-      self.switches.remove(s)
+    pass
 
   def _handle_openflow_discovery_LinkEvent (self, event):
-    s1 = event.link.dpid1
-    s2 = event.link.dpid2
-    s1 = dpid_to_str(s1)
-    s2 = dpid_to_str(s2)
-    if s1 > s2: s1,s2 = s2,s1
-
-    assert s1 in self.switches
-    assert s2 in self.switches
-
-    if event.added and (s1,s2) not in self.links:
-      self.links.add((s1,s2))
-      self.send(ae(s1,s2))
-
-      # Do we have abandoned hosts?
-      for h,s in self.hosts.items():
-        if s == s1: self.send(ae(h,s1))
-        elif s == s2: self.send(ae(h,s2))
-
-    elif event.removed and (s1,s2) in self.links:
-      self.links.remove((s1,s2))
-      self.send(de(s1,s2))
+    pass
 
 
 loop = None
 
 def launch (port = 8282, __INSTANCE__ = None):
-  if not core.hasComponent("GephiTopo"):
-    core.registerNew(GephiTopo)
-
-  global loop
-  if not loop:
-    loop = RecocoIOLoop()
-    #loop.more_debugging = True
-    loop.start()
-
-  worker_type = GephiHTTPWorker
-  w = RecocoServerWorker(child_worker_type=worker_type, port = int(port))
-  loop.register_worker(w)
+  pass

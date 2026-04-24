@@ -65,21 +65,7 @@ class DPIDWatcher (EventMixin):
       nexus.addListener(ev, self._handler)
 
   def _handler (self, event, *args, **kw):
-    dpid = getattr(event, 'dpid', None)
-    if dpid is None:
-      return
-
-    if self.invert:
-      if event.dpid in self._dpids: return
-    else:
-      if event.dpid not in self._dpids: return
-
-    if len(args) or len(kw):
-      log.warn("Custom invoke for %s", event)
-      # This is a warning because while I think this will always or almost
-      # always work, I didn't feel like checking.
-
-    self.raiseEventNoErrors(event)
+    pass
 
   def _add_dpid (self, dpid):
     if dpid is True:

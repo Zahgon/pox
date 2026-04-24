@@ -131,11 +131,11 @@ class Entity (object):
     self.id = id
 
   def serialize(self):
-    return pickle.dumps(self, protocol = 0)
+    pass
 
   @classmethod
   def deserialize(cls):
-    return pickle.loads(cls, protocol = 0)
+    pass
 
 class Host (Entity):
   """
@@ -169,7 +169,7 @@ class Controller (Entity):
     self.handshake_complete = handshake_complete
 
   def handshake_completed(self):
-    self.handshake_complete = True
+    pass
 
 class Topology (EventMixin):
   _eventMixin_events = [
@@ -203,39 +203,17 @@ class Topology (EventMixin):
     Raises an exception if fail is True and the entity doesn't exist
     See also: The 'entity' property.
     """
-    if fail:
-      return self._entities[ID]
-    else:
-      return self._entities.get(ID, None)
+    pass
 
   def removeEntity (self, entity):
-    del self._entities[entity.id]
-    self.log.info(str(entity) + " left")
-    if isinstance(entity, Switch):
-      self.raiseEvent(SwitchLeave, entity)
-    elif isinstance(entity, Host):
-      self.raiseEvent(HostLeave, entity)
-    else:
-      self.raiseEvent(EntityLeave, entity)
+    pass
 
   def addEntity (self, entity):
     """ Will raise an exception if entity.id already exists """
-    if entity.id in self._entities:
-      raise RuntimeError("Entity exists")
-    self._entities[entity.id] = entity
-    self.log.debug(str(entity) + " (id: " + str(entity.id) + ") joined")
-    if isinstance(entity, Switch):
-      self.raiseEvent(SwitchJoin, entity)
-    elif isinstance(entity, Host):
-      self.raiseEvent(HostJoin, entity)
-    else:
-      self.raiseEvent(EntityJoin, entity)
+    pass
 
   def getEntitiesOfType (self, t=Entity, subtypes=True):
-    if subtypes is False:
-      return [x for x in self._entities.values() if type(x) is t]
-    else:
-      return [x for x in self._entities.values() if isinstance(x, t)]
+    pass
 
   def addListener(self, eventType, handler, once=False, weak=False,
                   priority=None, byName=False):
@@ -267,11 +245,7 @@ class Topology (EventMixin):
 
     Returns a hash: { id -> pickled entitiy }
     """
-    id2entity = {}
-    for id in self._entities:
-      entity = self._entities[id]
-      id2entity[id] = entity.serialize()
-    return id2entity
+    pass
 
   def deserializeAndMerge (self, id2entity):
     """
@@ -279,27 +253,11 @@ class Topology (EventMixin):
       - insert a new Entry if it didn't already exist here, or
       - update a pre-existing entry if it already existed
     """
-    for entity_id in id2entity.keys():
-      pickled_entity = id2entity[entity_id].encode('ascii', 'ignore')
-      entity = pickle.loads(pickled_entity)
-      entity.id = entity_id.encode('ascii', 'ignore')
-      try:
-        # Try to parse it as an int
-        entity.id = int(entity.id)
-      except ValueError:
-        pass
-
-      existing_entity = self.getEntityByID(entity.id)
-      if existing_entity:
-        self.log.debug("New metadata for %s: %s " % (str(existing_entity), str(entity)))
-        # TODO: define an Entity.merge method (need to do something about his update!)
-      else:
-        self.addEntity(entity)
+    pass
 
   def _fulfill_SwitchJoin_promise(self, handler):
     """ Trigger the SwitchJoin handler for all pre-existing switches """
-    for switch in self.getEntitiesOfType(Switch, True):
-      handler(SwitchJoin(switch))
+    pass
 
   def __len__(self):
     return len(self._entities)

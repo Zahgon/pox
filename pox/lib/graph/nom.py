@@ -109,34 +109,17 @@ class NOM (Graph, EventMixin):
     Raises an exception if fail is True and the entity doesn't exist
     See also: The 'entity' property.
     """
-    r = self.find(Or(Equal('DPID', ID),Equal(F('ID'), ID)))
-    if len(r) == 0:
-      if fail:
-        raise RuntimeError("No entity with ID " + str(ID))
-      else:
-        return None
-    assert len(r) == 1
-    return r[0]
+    pass
 
   def removeEntity (self, entity):
-    if entity in self:
-      self.remove(entity)
-      self.log.info(str(entity) + " left")
-      self.raiseEvent(EntityLeave, entity)
+    pass
 
   def addEntity (self, entity):
     """ Will raise an exception if entity.id already exists """
-    if entity in self:
-      raise RuntimeError("Entity exists")
-    self.add(entity)
-    self.log.info(str(entity) + " joined")
-    self.raiseEvent(EntityJoin, entity)
+    pass
 
   def getEntitiesOfType (self, t=Entity, subtypes=True):
-    if subtypes is False:
-      return self.find(is_a=t)
-    else:
-      return self.find(type=t)
+    pass
 
   def raiseEvent (self, event, *args, **kw):
     """

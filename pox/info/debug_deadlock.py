@@ -35,36 +35,12 @@ base_path = os.path.split(base_path)[0]
 base_path += os.path.sep
 
 def fmt_tb (tb):
-  f = tb.filename
-  if f.startswith(base_path):
-    f = f[len(base_path):]
-  l = "%s:%i" % (f, tb.lineno)
-  code = tb.code_context
-  if code: code = code[0].strip()
-  if not code: code = "<Unknown>"
-  return "%20s: %s" % (l,code)
+  pass
 
 def _trace_thread_proc ():
-  try:
-    while core.running:
-      frames = sys._current_frames()
-      for key in frames:
-        frame = frames[key]
-        print(fmt_tb(inspect.getframeinfo(frame)))
-        outer_frames = inspect.getouterframes(frame)
-        for i in range(0, len(outer_frames)):
-          print("  " + fmt_tb(inspect.getframeinfo(outer_frames[i][0])))
-
-      time.sleep(5)
-  except:
-    traceback.print_exc()
+  pass
 
 
 def launch ():
 
-  _trace_thread = threading.Thread(target=_trace_thread_proc)
-  _trace_thread.daemon = True
-
-  # Start it up a bit in the future so that it doesn't print all over
-  # init messages.
-  core.callDelayed(3, _trace_thread.start)
+  pass

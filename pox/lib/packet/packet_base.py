@@ -155,11 +155,11 @@ class packet_base (object):
         setting the new payload's "prev" field to point back to its new
         container (the same as the set_payload() method).
         """
-        return self.next
+        pass
 
     @payload.setter
     def payload (self, new_payload):
-      self.set_payload(new_payload)
+      pass
 
     def set_payload(self, payload):
         '''

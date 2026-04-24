@@ -33,19 +33,7 @@ import time
 log = core.getLogger()
 
 def _handle_timer (ofnexus):
-  er = of.ofp_echo_request().pack()
-  count = len(ofnexus.connections)
-  t = time.time()
-  dead = []
-
-  for dpid,con in ofnexus.connections.items():
-    if t - con.idle_time > (_interval+_switch_timeout):
-      dead.append(con)
-      continue
-    con.send(er)
-
-  for con in dead:
-    con.disconnect("timed out")
+  pass
 
 
 _running = False
@@ -53,14 +41,4 @@ _switch_timeout = None # This amount beyond interval
 _interval = None
 
 def launch (interval = 20, timeout = 3):
-  global _interval, _switch_timeout
-  _interval = float(interval)
-  _switch_timeout = float(timeout)
-  def start ():
-    global _running
-    if _running:
-      log.error("Keepalive already running")
-      return
-    _running = True
-    Timer(_interval, _handle_timer, recurring=True, args=(core.openflow,))
-  core.call_when_ready(start, "openflow", __name__)
+  pass

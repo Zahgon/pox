@@ -41,83 +41,9 @@ _show_by_default = None
 
 
 def cb (data, parser):
-  packet = pkt.ethernet(data)
-
-  #print "%04x %4s %s" % (d.effective_ethertype,len(d),d.dump())
-
-  show = _show_by_default
-  p = packet
-  while p:
-    if p.__class__.__name__.lower() in _types:
-      if _show_by_default:
-        # This packet is hidden
-        return
-      else:
-        # This packet should be shown
-        show = True
-        break
-      return
-    if not hasattr(p, 'next'): break
-    p = p.next
-
-  if not show: return
-
-  msg = ""
-  if _verbose:
-    msg += packet.dump()
-  else:
-    p = packet
-    while p:
-      if isinstance(p, bytes):
-        msg += "[%s bytes]" % (len(p),)
-        break
-      elif isinstance(p, str):
-        msg += "[%s chars]" % (len(p),)
-        break
-      msg += "[%s]" % (p.__class__.__name__,)
-      p = p.next
-
-  if _max_length:
-    if len(msg) > _max_length:
-      msg = msg[:_max_length-3]
-      msg += "..."
-  #core.getLogger("dump").info(msg)
-  print(msg)
+  pass
 
 
 def launch (infile, verbose = False, max_length = 110,
             hide = False, show = False):
-  global _verbose, _max_length, _types, _show_by_default
-  _verbose = verbose
-  if max_length is True or max_length == '0':
-    _max_length = None
-  else:
-    _max_length = int(max_length)
-  force_show = (show is True) or (hide is False and show is False)
-  if isinstance(hide, str):
-    hide = hide.replace(',', ' ').replace('|', ' ')
-    hide = set([p.lower() for p in hide.split()])
-  else:
-    hide = set()
-  if isinstance(show, str):
-    show = show.replace(',', ' ').replace('|', ' ')
-    show = set([p.lower() for p in show.split()])
-  else:
-    show = set()
-
-  if hide and show:
-    raise RuntimeError("Can't both show and hide packet types")
-
-  if show:
-    _types = show
-  else:
-    _types = hide
-  _show_by_default = not not hide
-  if force_show:
-    _show_by_default = force_show
-
-  data = open(infile, "r").read()
-  p = pxparse.PCapParser(callback=cb)
-  p.feed(data)
-
-  core.quit()
+  pass

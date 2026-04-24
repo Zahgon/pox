@@ -53,9 +53,7 @@ class LogFilter (object):
   This just turns off debug messages from the webserver.
   """
   def filter (self, record):
-    if record.levelno != logging.DEBUG: return True
-    if record.name == "web.webcore.server": return False
-    return True
+    pass
 
 
 class LogHandler (logging.Handler):
@@ -157,18 +155,7 @@ class LogHandler (logging.Handler):
     self._drop_subsystems()
 
   def emit (self, record):
-    o = {'message' : self.format(record)}
-    #o['message'] = record.getMessage()
-    if self._json:
-      for attr in _attributes:
-        o[attr] = getattr(record, attr)
-      o['asctime'] = self.formatter.formatTime(record, self._dateFormat)
-      if record.exc_info:
-        o['exc_info'] = [str(record.exc_info[0]),
-                         str(record.exc_info[1]),
-                         traceback.format_tb(record.exc_info[2],1)]
-        o['exc'] = traceback.format_exception(*record.exc_info)
-    self._channel.send(o)
+    pass
 
 
 def _process_commands (msg):
@@ -223,15 +210,10 @@ class LogBot (ChannelBot):
 
   def _join (self, event, con, msg):
     #self.reply(event, hello = "Hello, %s!" % (con,))
-    if self._handler is not None:
-      log.warning("Multiple clients on channel " + self.channel.name)
-    else:
-      self._handler = LogHandler(self.channel, msg)
+    pass
 
   def _leave (self, con, empty):
-    if empty:
-      self._handler._close()
-      self._handler = None
+    pass
 
   def _unhandled (self, event):
     _process_commands(event.msg)
@@ -239,17 +221,7 @@ class LogBot (ChannelBot):
 
 
 def _handle_new_channel (event):
-  if event.channel.name.startswith("log_"):
-    # New channel named log_<something>?  Add a log bot.
-    LogBot(event.channel)
+  pass
 
 def launch (nexus = "MessengerNexus"):
-  def start (nexus):
-    # One bot for default log channel
-    real_nexus = core.components[nexus]
-    LogBot(real_nexus.get_channel('log'))
-
-    # This will create new channels on demand
-    real_nexus.addListener(ChannelCreate, _handle_new_channel)
-
-  core.call_when_ready(start, nexus, args=[nexus])
+  pass

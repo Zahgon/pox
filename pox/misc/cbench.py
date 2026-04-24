@@ -29,16 +29,15 @@ class CBench (object):
     connection.addListeners(self)
 
   def _handle_PacketIn (self, event):
-    msg = of.ofp_flow_mod()
-    self.connection.send(msg)
+    pass
 
 class cbench (object):
   def __init__ (self):
     core.openflow.addListeners(self)
 
   def _handle_ConnectionUp (self, event):
-    CBench(event.connection)
+    pass
 
 
 def launch ():
-  core.registerNew(cbench)
+  pass

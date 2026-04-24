@@ -27,14 +27,4 @@ log.setLevel(logging.INFO)
 from pox.lib.addresses import EthAddr
 
 def launch (src_mac = None, no_flow = False, **kw):
-  for k, v in kw.items():
-    if k in host_tracker.timeoutSec:
-      host_tracker.timeoutSec[k] = int(v)
-      log.debug("Changing timer parameter: %s = %s",k,v)
-    elif k == 'pingLim':
-      host_tracker.PingCtrl.pingLim = int(v)
-      log.debug("Changing ping limit to %s",v)
-    else:
-      log.error("Unknown option: %s(=%s)",k,v)
-  core.registerNew(host_tracker.host_tracker, ping_src_mac = src_mac,
-      install_flow = not no_flow)
+  pass

@@ -26,64 +26,12 @@ _first_init = False
 
 
 def _del_pidfiles ():
-  if not _files: return
-  try:
-    msg = "Cleaning up %i pidfile" % (len(_files),)
-    if len(_files) != 1: msg += 's'
-    log.debug(msg)
-  except:
-    pass
-
-  for f in list(_files):
-    shortname = f
-    if os.path.abspath(os.path.basename(f)) == f:
-      shortname = os.path.basename(f)
-    try:
-      os.remove(f)
-    except:
-      msg = "Couldn't delete pidfile '%s'" % (shortname,)
-      try:
-        log.exception(msg)
-      except:
-        print(msg)
-    _files.remove(f)
+  pass
 
 
 def _handle_DownEvent (event):
-  _del_pidfiles()
+  pass
 
 
 def launch (file, force = False, __INSTANCE__ = None):
-  global log
-  log = core.getLogger()
-
-  absfile = os.path.abspath(file)
-
-  if absfile in _files:
-    log.warn("pidfile '%s' specified multiple times", file)
-    return
-
-  global _first_init
-
-  if not _first_init:
-    try:
-      atexit.register(_del_pidfiles)
-    except:
-      log.info('atexit not available')
-    core.addListenerByName("DownEvent", _handle_DownEvent)
-    _first_init = True
-
-  if os.path.exists(absfile) and not force:
-    log.error("Aborting startup: pidfile '%s' exists "
-              "(use --force to override)", file)
-    return False
-
-  try:
-    f = open(absfile, 'w')
-    f.write("%s\n" % (os.getpid(),))
-  except:
-    log.exception("Failed to create pidfile '%s'", file)
-    return False
-  f.close()
-
-  _files.add(absfile)
+  pass

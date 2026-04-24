@@ -50,10 +50,7 @@ class BaseConsumer (Task):
     """
     Add a work item
     """
-    self.queue.appendleft(work)
-
-    # Since we have work, make sure we're scheduled
-    core.scheduler.schedule(self)
+    pass
 
   def _on_exception (self, exception, work):
     """
@@ -104,7 +101,7 @@ class FlexConsumer (BaseConsumer):
 
     A work item is a callable with associated args/kwargs.
     """
-    super(FlexConsumer, __self).add_work(__callable, __args, __kw)
+    pass
 
   def _do_work (self, work):
     f, args, kw = work

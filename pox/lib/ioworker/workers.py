@@ -31,9 +31,9 @@ log = core.getLogger()
 
 class LoggerBase (object):
   def _error (self, *args, **kw):
-    log.error(type(self).__name__ + ": " + str(args[0]), *args[1:], **kw)
+    pass
   def _warn (self, *args, **kw):
-    log.warn(type(self).__name__ + ": " + str(args[0]), *args[1:], **kw)
+    pass
   def _info (self, *args, **kw):
     log.info(type(self).__name__ + ": " + str(args[0]), *args[1:], **kw)
   def _debug (self, *args, **kw):
@@ -59,10 +59,10 @@ class TCPServerWorkerBase (IOWorker, LoggerBase):
 
   @property
   def local_ip (self):
-    return IPAddr(s.getsockname()[0])
+    pass
   @property
   def local_port (self):
-    return s.getsockname()[1]
+    pass
 
   def _do_accept (self, loop, socket):
     """
@@ -187,20 +187,13 @@ class PersistentIOWorker (RecocoIOWorker, LoggerBase):
       return None
 
   def open_later (self):
-    core.callDelayed(self.reconnect_delay, self.begin, **self.kw)
+    pass
 
   def _handle_close (self):
-    self._debug("Disconnected")
-    super(PersistentIOWorker, self)._handle_close()
-    if self.disconnect_callback:
-      if self.disconnect_callback(self) is False:
-        return
-    self.open_later()
+    pass
 
   def _handle_connect (self):
-    super(PersistentIOWorker, self)._handle_connect()
-    if self.connect_callback:
-      self.connect_callback(self)
+    pass
 
 
 class BackoffWorker (PersistentIOWorker):
@@ -210,15 +203,7 @@ class BackoffWorker (PersistentIOWorker):
     super(BackoffWorker,self).__init__(**kw)
 
   def _handle_connect (self):
-    self.reconnect_delay = 0.5
-    super(BackoffWorker, self)._handle_connect()
+    pass
 
   def open_later (self):
-    self.reconnect_delay *= 2
-    self.reconnect_delay = int(self.reconnect_delay)
-    if self.reconnect_delay > self.max_retry_delay:
-      self.reconnect_delay = self.max_retry_delay
-    self.kw['reconnect_delay'] = self.reconnect_delay
-    self._debug("Try again in %s seconds", self.reconnect_delay)
-    from pox.core import core
-    core.callDelayed(self.reconnect_delay, self.begin, **self.kw)
+    pass

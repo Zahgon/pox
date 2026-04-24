@@ -84,7 +84,7 @@ class vlan(packet_base):
 
     @property
     def effective_ethertype (self):
-      return ethernet._get_effective_ethertype(self)
+      pass
 
     @property
     def type (self):
@@ -95,7 +95,7 @@ class vlan(packet_base):
         'type' attribute, and for vlan it's in the 'eth_type' attribute.
         We should probably normalize this. For now, we at least have this.
         """
-        return self.eth_type
+        pass
 
     def hdr (self, payload):
         pcpid  = self.pcp << 13

@@ -194,7 +194,7 @@ class lldp (packet_base):
     self.parsed = True
 
   def add_tlv (self, tlv):
-    self.tlvs.append(tlv)
+    pass
 
   def __str__ (self):
     lstr = ''
@@ -262,7 +262,7 @@ class simple_tlv (tlv_base):
 
   @property
   def strlen (self):
-    return self._data_len()
+    pass
 
   def pack (self):
     typelen = self.tlv_type << 9
@@ -288,7 +288,7 @@ class simple_tlv (tlv_base):
 
     Override this.
     """
-    return len(self._pack_data())
+    pass
 
   def _parse_data (self, data):
     """
@@ -462,7 +462,7 @@ class management_address (simple_tlv):
     self.object_identifier = data[7+asl+1:7+asl+1+osl]
 
   def _data_len (self):
-    return 1+1+len(self.address)+1+4+1+len(self.object_identifier)
+    pass
 
   def _pack_data (self):
     r = struct.pack('!BB', len(self.address)+1, self.address_subtype)

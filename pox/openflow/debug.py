@@ -15,5 +15,4 @@
 pcap_traces = False
 
 def launch ():
-  global pcap_traces
-  pcap_traces = True
+  pass

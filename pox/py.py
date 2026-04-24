@@ -41,11 +41,7 @@ def _monkeypatch_console ():
     uc = pyrepl.unix_console.UnixConsole
     old = uc.prepare
     def prep (self):
-      old(self)
-      f = sys.stdin.fileno()
-      a = termios.tcgetattr(f)
-      a[1] |= 1 # Turn on postprocessing (OPOST)
-      termios.tcsetattr(f, termios.TCSANOW, a)
+      pass
     uc.prepare = prep
   except:
     pass
@@ -122,8 +118,7 @@ class Interactive (EventMixin):
       except Exception:
         pass
       def save_history ():
-        readline.write_history_file(history)
-        _log.debug("Saved console history")
+        pass
       atexit.register(save_history)
 
     if self.completion:
@@ -146,7 +141,7 @@ class Interactive (EventMixin):
     # Ridiculously gross code to wait for a while before showing the console
     is_up = [False]
     def notify_up ():
-      is_up[0] = True
+      pass
     core.call_later(notify_up)
     while not is_up[0]:
       time.sleep(0.2)
@@ -168,20 +163,13 @@ class Interactive (EventMixin):
     # Patch in the synchronized feature
     real_runcode = console.runcode
     def runcode (code):
-      if self.variables['sync'] and core.running:
-        with core.scheduler.synchronized():
-          return real_runcode(code)
-      return real_runcode(code)
+      pass
     console.runcode = runcode
 
     # Patch in the event hook; why don't we just subclass InteractiveConsole?!
     real_runsource = console.runsource
     def runsource(source, *args, **kw):
-      e = SourceEntered(source)
-      self.raiseEvent(e)
-      source = e.source
-      if source is None: return
-      return real_runsource(source, *args, **kw)
+      pass
     console.runsource = runsource
 
     try:
@@ -196,17 +184,4 @@ class Interactive (EventMixin):
 
 def launch (disable = False, completion = None, history = False,
             sync = False, __INSTANCE__ = None):
-  if not core.hasComponent("Interactive"):
-    Interactive()
-
-  from . import boot
-  if not disable:
-    boot.set_main_function(core.Interactive.interact)
-  else:
-    boot.set_main_function(None)
-  core.Interactive.enabled = not disable
-  if completion is not None:
-    core.Interactive.completion = str_to_bool(completion)
-  if history:
-    core.Interactive.history = history
-  core.Interactive.variables['sync'] = sync
+  pass

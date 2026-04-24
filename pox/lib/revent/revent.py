@@ -326,7 +326,7 @@ class EventMixin (object):
     """
     Returns the number of listeners.
     """
-    return sum((len(x) for x in self._eventMixin_handlers.values()))
+    pass
 
   def removeListener (self, handlerOrEID, eventType=None):
     """
@@ -502,7 +502,7 @@ class EventMixin (object):
     """
     Remove all handlers from this object
     """
-    self._eventMixin_handlers = {}
+    pass
 
 
 def autoBindEvents (sink, source, prefix='', weak=False,
@@ -588,10 +588,7 @@ class CallProxy (object):
   def _forgetMe (self, o):
     # o is the weak reference object; we don't use it
     #print("Forgetting",self.removeData,self.method)
-    source = self.source()
-    if source is not None:
-      source.removeListener(self.removeData)
-    self.obj = None
+    pass
   def __call__ (self, *args, **kw):
     #print("weak call")
     if self.obj is None: return

@@ -84,29 +84,20 @@ class OFConRequest (object):
     core.callLater(self._do_init, args, kw)
 
   def _do_init (self, args, kw):
-    self._listeners = self._con.addListeners(self)
-    self._init(*args, **kw)
+    pass
 
   def _init (self, *args, **kw):
     #log.warn("UNIMPLEMENTED REQUEST INIT")
     pass
 
   def get_response (self):
-    if not self._sync.wait(5):
-      # Whoops; timeout!
-      self._aborted = True
-      self._finish()
-      raise RuntimeError("Operation timed out")
-    return self._response
+    pass
 
   def _finish (self, value = None):
-    if self._response is None:
-      self._response = value
-    self._sync.set()
-    self._con.removeListeners(self._listeners)
+    pass
 
   def _result (self, key, value):
-    self._finish({'result':{key:value,'dpid':dpidToStr(self._con.dpid)}})
+    pass
 
 
 class OFSwitchDescRequest (OFConRequest):
@@ -117,13 +108,10 @@ class OFSwitchDescRequest (OFConRequest):
     self.xid = sr.xid
 
   def _handle_SwitchDescReceived (self, event):
-    if event.ofp.xid != self.xid: return
-    r = switch_desc_to_dict(event.stats)
-    self._result('switchdesc', r)
+    pass
 
   def _handle_ErrorIn (self, event):
-    if event.ofp.xid != self.xid: return
-    self._finish(make_error("OpenFlow Error", data=event.asString()))
+    pass
 
 
 class OFFlowStatsRequest (OFConRequest):
@@ -141,14 +129,10 @@ class OFFlowStatsRequest (OFConRequest):
     self.xid = sr.xid
 
   def _handle_FlowStatsReceived (self, event):
-    if event.ofp[0].xid != self.xid: return
-    stats = flow_stats_to_list(event.stats)
-
-    self._result('flowstats', stats)
+    pass
 
   def _handle_ErrorIn (self, event):
-    if event.ofp.xid != self.xid: return
-    self._finish(make_error("OpenFlow Error", data=event.asString()))
+    pass
 
 
 class OFSetTableRequest (OFConRequest):
@@ -180,58 +164,27 @@ class OFSetTableRequest (OFConRequest):
       self._con.send(of.ofp_barrier_request(xid=xid))
 
   def _handle_BarrierIn (self, event):
-    if event.ofp.xid != self.xid: return
-    if self.done: return
-    self.count -= 1
-    if self.count <= 0:
-      self._result('flowmod', True)
-      self.done = True
+    pass
 
   def _handle_ErrorIn (self, event):
-    if event.ofp.xid != self.xid: return
-    if self.done: return
-    self.clear_table()
-    self.done = True
-    self._finish(make_error("OpenFlow Error", data=event.asString()))
+    pass
 
 
 class OFRequestHandler (JSONRPCHandler):
 
   def _exec_set_table (self, dpid, flows):
-    dpid = strToDPID(dpid)
-    con = core.openflow.getConnection(dpid)
-    if con is None:
-      return make_error("No such switch")
-
-    return OFSetTableRequest(con, flows).get_response()
+    pass
 
   def _exec_get_switch_desc (self, dpid):
-    dpid = strToDPID(dpid)
-    con = core.openflow.getConnection(dpid)
-    if con is None:
-      return make_error("No such switch")
-
-    return OFSwitchDescRequest(con).get_response()
+    pass
 
   def _exec_get_flow_stats (self, dpid, *args, **kw):
-    dpid = strToDPID(dpid)
-    con = core.openflow.getConnection(dpid)
-    if con is None:
-      return make_error("No such switch")
-
-    return OFFlowStatsRequest(con, *args, **kw).get_response()
+    pass
 
   def _exec_get_switches (self):
-    return {'result':list_switches()}
+    pass
 
 
 
 def launch (username='', password=''):
-  def _launch ():
-    cfg = {}
-    if len(username) and len(password):
-      cfg['auth'] = lambda u, p: (u == username) and (p == password)
-    core.WebServer.set_handler("/OF/",OFRequestHandler,cfg,True)
-
-  core.call_when_ready(_launch, ["WebServer","openflow"],
-                       name = "openflow.webservice")
+  pass

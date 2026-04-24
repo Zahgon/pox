@@ -21,12 +21,4 @@ from pox.core import core
 from pox.lib.revent import EventRemove
 
 def launch ():
-  def set_miss_length (event = None):
-    if not core.hasComponent('openflow'):
-      return
-    core.openflow.miss_send_len = 0x7fff
-    core.getLogger().info("Requesting full packet payloads")
-    return EventRemove
-
-  if set_miss_length() is None:
-    core.addListenerByName("ComponentRegistered", set_miss_length)
+  pass

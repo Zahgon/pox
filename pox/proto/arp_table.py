@@ -42,7 +42,7 @@ class ARPEntry (object):
 
   @property
   def age (self):
-    return time.time() - self.ts
+    pass
 
   def confirm (self, mac=None):
     self.next_refresh = time.time() + self.REFRESH_TIME
@@ -159,7 +159,7 @@ class ARPTable (object):
   def _timer_proc (self):
     # We just blow away all the entries every interval, so on average, they
     # live for half the interval.
-    del self.pending[:]
+    pass
 
   def __del__ (self):
     if self.timer:
@@ -181,18 +181,7 @@ class ARPTable (object):
     send_function(e.pack())
 
   def rx_arp_reply (self, arp):
-    assert arp.opcode == arp.REPLY
-    self.rx_arp(arp)
+    pass
 
   def rx_arp (self, arp):
-    if arp.protosrc not in self.by_ip:
-      self.add_entry(mac=arp.hwsrc, ip=arp.protosrc)
-    else:
-      self.by_ip[arp.protosrc].confirm(arp.hwsrc)
-
-    # Send any pending packets
-    for index,(ip,args) in reversed(list(enumerate(self.pending))):
-      if ip == arp.protosrc:
-        del self.pending[index]
-        log.debug("ARP reply allows sending pending packet")
-        self.send(*args)
+    pass

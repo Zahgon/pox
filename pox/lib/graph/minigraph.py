@@ -112,19 +112,7 @@ class MultiGraph (object):
     self._edges[node2][node1][key] = e
 
   def add_edges_from (self, edges, **attr):
-    for e in edges:
-      if len(e) == 2:
-        self.add_edge(*e)
-      elif len(e) == 3:
-        d = e[2].copy()
-        d.update(attr)
-        self.add_edge(e[0],e[1],**d)
-      elif len(e) == 4:
-        d = e[3].copy()
-        d.update(attr)
-        self.add_edge(e[0],e[1],key=e[3],**d)
-      else:
-        assert False
+    pass
 
   def remove_edge (self, node1, node2, key=None):
     if key is None:
@@ -133,10 +121,7 @@ class MultiGraph (object):
     del self._edges[node2][node1][key]
 
   def add_path (self, nodes, **attr):
-    for n in nodes:
-      self.add_node(n, **attr)
-    for n1,n2 in zip(nodes[:-1],nodes[1:]):
-      self.add_edge(n1,n2)
+    pass
 
   def __getitem__ (self, node):
     o = {}

@@ -142,35 +142,4 @@ class arp (packet_base):
         return buf
 
     def _to_str(self):
-        op = str(self.opcode)
-
-        eth_type = None
-        # Ethernet
-        if hasattr(self.prev, 'type'):
-            eth_type = self.prev.type
-        # Vlan
-        elif hasattr(self.prev, 'eth_type'):
-            eth_type = self.prev.eth_type
-        else:
-            self.err('(arp) unknown datalink type')
-            eth_type = ethernet.ARP_TYPE
-
-        if eth_type == ethernet.ARP_TYPE:
-            if self.opcode == arp.REQUEST:
-                op = "REQUEST"
-            elif self.opcode == arp.REPLY:
-                op = "REPLY"
-        elif eth_type == ethernet.RARP_TYPE:
-            if self.opcode == arp.REV_REQUEST:
-                op = "REV_REQUEST"
-            elif self.opcode == arp.REV_REPLY:
-                op = "REV_REPLY"
-
-        s = "[ARP {0} hw:{1} p:{2} {3}>{4} {5}>{6}]".format(op,
-                                                  self.hwtype,
-                                                  self.prototype,
-                                                  EthAddr(self.hwsrc),
-                                                  EthAddr(self.hwdst),
-                                                  IPAddr(self.protosrc),
-                                                  IPAddr(self.protodst))
-        return s
+        pass

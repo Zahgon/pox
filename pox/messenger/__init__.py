@@ -131,11 +131,7 @@ class MessageReceived (Event):
     """
     Returns True if this message is to the given channel
     """
-    if isinstance(channel, Channel):
-      channel = channel.name
-    if channel == self.channel: return True
-    if channel in self.channel: return True
-    return False
+    pass
 
   def _invoke (self, handler, *args, **kw):
     # Special handling -- pass the message
@@ -202,8 +198,7 @@ class Connection (EventMixin):
     """
     Called by the default channelbot if we connect to another messenger.
     """
-    self._remote_session_id = event.msg.get('session_id')
-    log.debug("%s welcomed as %s.", self, self._remote_session_id)
+    pass
 
   def _send_welcome (self):
     """
@@ -250,7 +245,7 @@ class Connection (EventMixin):
     """
     True if this Connection is still connected.
     """
-    return self._is_connected
+    pass
 
   def _rx_message (self, msg):
     """
@@ -341,7 +336,7 @@ class Channel (EventMixin):
 
   @property
   def name (self):
-    return self._name
+    pass
 
   def _destroy (self):
     """ Remove channel """
@@ -368,9 +363,7 @@ class Channel (EventMixin):
     self._nexus.raiseEvent(e)
 
   def _add_member (self, con, msg = {}):
-    if con in self._members: return
-    self._members.add(con)
-    self.raiseEvent(ChannelJoin, con, self, msg)
+    pass
 
   def _remove_member (self, con, allow_destroy = True):
     if con not in self._members: return
@@ -434,14 +427,13 @@ class ChannelBot (object):
           self.prefixes.append(n)
 
   def _handle_ChannelDestroyed (self, event):
-    self.channel.removeListeners(self.listeners)
-    self._destroyed()
+    pass
 
   def _handle_ChannelJoin (self, event):
-    self._join(event, event.con, event.msg)
+    pass
 
   def _handle_ChannelLeave (self, event):
-    self._leave(event.con, len(self.channel._members) == 0)
+    pass
 
   def _handle_MessageReceived (self, event, msg):
     for prefix in self.prefixes:
@@ -520,10 +512,10 @@ class DefaultChannelBot (ChannelBot):
     self._bots[name] = bot
 
   def _exec_newlines_False (self, event):
-    event.con._newlines = False
+    pass
 
   def _exec_newlines_True (self, event):
-    event.con._newlines = True
+    pass
 
   def _exec_cmd_invite (self, event):
     """
@@ -532,28 +524,7 @@ class DefaultChannelBot (ChannelBot):
     Note that you can invite a bot to an empty (new) temporary channel.
     It will stay until the first member leaves.
     """
-    botname = event.msg.get('bot')
-    botclass = self._bots.get(botname)
-    channel = event.msg.get('channel')
-    new_channel = False
-    if channel is None:
-      new_channel = True
-      channel = self._gen_channel_name(event.msg.get("prefix", "temp"))
-
-    chan = self._nexus.get_channel(channel, create=True, temporary=True)
-    if chan is None:
-      #TODO: send an error
-      log.warning("A bot was invited to a nonexistent channel (%s)"
-                  % (channel,))
-      return
-    if botclass is None:
-      #TODO: send an error
-      log.warning("A nonexistent bot (%s) was invited to a channel"
-                  % (botname,))
-      return
-    bot = botclass(channel, self._nexus)
-    if new_channel:
-      self.reply(event, new_channel = new_channel)
+    pass
 
   def _unhandled (self, event):
     log.warn("Default channel got unknown command: "
@@ -561,43 +532,25 @@ class DefaultChannelBot (ChannelBot):
 
   def _gen_channel_name (self, prefix = "temp"):
     """ Makes up a channel name """
-    prefix += "_"
-    import random
-    while True:
-      # Sloppy
-      r = random.randint(1, 100000)
-      n = prefix + str(r)
-      if r not in self._nexus._channels:
-        break
-    return n
+    pass
 
   def _exec_cmd_new_channel (self, event):
     """ Generates a new channel with random name """
-    prefix = event.msg.get('prefix', 'temp')
-    n = self._gen_channel_name(prefix)
-    ch = self._nexus.get_channel(n, create=True, temporary=True)
-    ch._add_member(event.con, event.msg)
-    self.reply(event, new_channel = n)
+    pass
 
   def _exec_cmd_join_channel (self, event):
     """ Joins/creates a channel """
-    temp = event.msg.get('temporary', True) # Default temporary!
-    ch = self._nexus.get_channel(event.msg['channel'], temporary=temp)
-    if ch is None: return
-    ch._add_member(event.con, event.msg)
+    pass
 
   def _exec_cmd_leave_channel (self, event):
-    ch = self._nexus.get_channel(event.msg['channel'])
-    if ch is None: return
-    ch._remove_member(event.con)
+    pass
 
   def _exec_test (self, event, value):
-    log.info("Default channel got: " + str(value))
-    self.reply(event, test = value.upper())
+    pass
 
   def _exec_cmd_welcome (self, event):
     # We get this if we're connecting to another messenger.
-    event.con._rx_welcome(event)
+    pass
 
 
 class MessengerNexus (EventMixin):
@@ -690,4 +643,4 @@ class MessengerNexus (EventMixin):
 
 
 def launch ():
-  core.registerNew(MessengerNexus)
+  pass

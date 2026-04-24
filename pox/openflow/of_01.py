@@ -66,49 +66,22 @@ import traceback
 
 # handlers for stats replies
 def handle_OFPST_DESC (con, parts):
-  msg = parts[0].body
-  e = con.ofnexus.raiseEventNoErrors(SwitchDescReceived,con,parts[0],msg)
-  if e is None or e.halt != True:
-    con.raiseEventNoErrors(SwitchDescReceived, con, parts[0], msg)
+  pass
 
 def handle_OFPST_FLOW (con, parts):
-  msg = []
-  for part in parts:
-    msg.extend(part.body)
-  e = con.ofnexus.raiseEventNoErrors(FlowStatsReceived, con, parts, msg)
-  if e is None or e.halt != True:
-    con.raiseEventNoErrors(FlowStatsReceived, con, parts, msg)
+  pass
 
 def handle_OFPST_AGGREGATE (con, parts):
-  msg = parts[0].body
-  e = con.ofnexus.raiseEventNoErrors(AggregateFlowStatsReceived, con,
-                                     parts[0], msg)
-  if e is None or e.halt != True:
-    con.raiseEventNoErrors(AggregateFlowStatsReceived, con, parts[0], msg)
+  pass
 
 def handle_OFPST_TABLE (con, parts):
-  msg = []
-  for part in parts:
-    msg.extend(part.body)
-  e = con.ofnexus.raiseEventNoErrors(TableStatsReceived, con, parts, msg)
-  if e is None or e.halt != True:
-    con.raiseEventNoErrors(TableStatsReceived, con, parts, msg)
+  pass
 
 def handle_OFPST_PORT (con, parts):
-  msg = []
-  for part in parts:
-    msg.extend(part.body)
-  e = con.ofnexus.raiseEventNoErrors(PortStatsReceived, con, parts, msg)
-  if e is None or e.halt != True:
-    con.raiseEventNoErrors(PortStatsReceived, con, parts, msg)
+  pass
 
 def handle_OFPST_QUEUE (con, parts):
-  msg = []
-  for part in parts:
-    msg.extend(part.body)
-  e = con.ofnexus.raiseEventNoErrors(QueueStatsReceived, con, parts, msg)
-  if e is None or e.halt != True:
-    con.raiseEventNoErrors(QueueStatsReceived, con, parts, msg)
+  pass
 
 
 class OpenFlowHandlers (object):
@@ -174,54 +147,34 @@ class DefaultOpenFlowHandlers (OpenFlowHandlers):
   """
   @staticmethod
   def handle_STATS_REPLY (con, msg):
-    e = con.ofnexus.raiseEventNoErrors(RawStatsReply, con, msg)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(RawStatsReply, con, msg)
-    con._incoming_stats_reply(msg)
+    pass
 
   @staticmethod
   def handle_PORT_STATUS (con, msg): #A
-    if msg.reason == of.OFPPR_DELETE:
-      con.ports._forget(msg.desc)
-    else:
-      con.ports._update(msg.desc)
-    e = con.ofnexus.raiseEventNoErrors(PortStatus, con, msg)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(PortStatus, con, msg)
+    pass
 
   @staticmethod
   def handle_PACKET_IN (con, msg): #A
-    e = con.ofnexus.raiseEventNoErrors(PacketIn, con, msg)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(PacketIn, con, msg)
+    pass
 
   @staticmethod
   def handle_ERROR (con, msg): #A
-    err = ErrorIn(con, msg)
-    e = con.ofnexus.raiseEventNoErrors(err)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(err)
-    if err.should_log:
-      log.error(str(con) + " OpenFlow Error:\n" +
-                msg.show(str(con) + " Error: ").strip())
+    pass
 
   @staticmethod
   def handle_BARRIER_REPLY (con, msg):
-    e = con.ofnexus.raiseEventNoErrors(BarrierIn, con, msg)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(BarrierIn, con, msg)
+    pass
 
   @staticmethod
   def handle_VENDOR (con, msg):
-    log.info("Vendor msg: " + str(msg))
+    pass
 
   @staticmethod
   def handle_HELLO (con, msg): #S
     #con.msg("HELLO wire protocol " + hex(msg.version))
 
     # Send a features request
-    msg = of.ofp_features_request()
-    con.send(msg)
+    pass
 
   @staticmethod
   def handle_ECHO_REPLY (con, msg):
@@ -230,34 +183,19 @@ class DefaultOpenFlowHandlers (OpenFlowHandlers):
 
   @staticmethod
   def handle_ECHO_REQUEST (con, msg): #S
-    reply = msg
-
-    reply.header_type = of.OFPT_ECHO_REPLY
-    con.send(reply)
+    pass
 
   @staticmethod
   def handle_FLOW_REMOVED (con, msg): #A
-    e = con.ofnexus.raiseEventNoErrors(FlowRemoved, con, msg)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(FlowRemoved, con, msg)
+    pass
 
   @staticmethod
   def handle_FEATURES_REPLY (con, msg):
-    con.features = msg
-    con.original_ports._ports = set(msg.ports)
-    con.ports._reset()
-    con.dpid = msg.datapath_id # Check this
-
-    con.ofnexus._connect(con) #FIXME: Should this be here?
-    e = con.ofnexus.raiseEventNoErrors(FeaturesReceived, con, msg)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(FeaturesReceived, con, msg)
+    pass
 
   @staticmethod
   def handle_GET_CONFIG_REPLY (con, msg):
-    e = con.ofnexus.raiseEventNoErrors(ConfigurationReceived, con, msg)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(ConfigurationReceived, con, msg)
+    pass
 
   @staticmethod
   def handle_QUEUE_GET_CONFIG_REPLY (con, msg):
@@ -283,116 +221,34 @@ class HandshakeOpenFlowHandlers (OpenFlowHandlers):
     super(HandshakeOpenFlowHandlers, self).__init__()
 
   def handle_BARRIER_REPLY (self, con, msg):
-    if not self._barrier: return
-    if msg.xid != self._barrier.xid:
-      con.dpid = None
-      con.err("failed connect")
-      con.disconnect()
-    else:
-      self._finish_connecting(con)
+    pass
 
   def handle_ERROR (self, con, msg): #A
-    if not self._barrier: return
-    if msg.xid != self._barrier.xid: return
-    if msg.type != of.OFPET_BAD_REQUEST: return
-    if msg.code != of.OFPBRC_BAD_TYPE: return
-    # Okay, so this is probably an HP switch that doesn't support barriers
-    # (ugh).  We'll just assume that things are okay.
-    self._finish_connecting(con)
+    pass
 
   def handle_HELLO (self, con, msg): #S
     # Send features and switch desc requests
-    if not self._features_request_sent:
-      self._features_request_sent = True
-      fr = of.ofp_features_request()
-
-      if self.request_description:
-        ss = of.ofp_stats_request()
-        ss.body = of.ofp_desc_stats_request()
-
-        con.send(fr.pack() + ss.pack())
-      else:
-        con.send(fr)
+    pass
 
   @staticmethod
   def handle_ECHO_REQUEST (con, msg): #S
-    reply = msg
-
-    reply.header_type = of.OFPT_ECHO_REPLY
-    con.send(reply)
+    pass
 
   @staticmethod
   def handle_STATS_REPLY (con, msg):
-    if msg.body and isinstance(msg.body, of.ofp_desc_stats_reply):
-      con.description = msg.body
+    pass
 
   def handle_FEATURES_REPLY (self, con, msg):
-    if msg.version not in self.allowed_versions:
-      # It's likely you won't see this message because the other side will
-      # not have sent a features reply if it doesn't support OF 1.0.
-      con.err("OpenFlow version 0x%02x not supported" % (msg.version,))
-      con.disconnect()
-      return
-    connecting = con.connect_time == None
-    con.features = msg
-    con.original_ports._ports = set(msg.ports)
-    con.ports._reset()
-    con.dpid = msg.datapath_id
-
-    # If any port status messages come between now and when the connection is
-    # actually up, buffer them to raise later.
-    con._deferred_port_status = []
-
-    nexus = core.OpenFlowConnectionArbiter.getNexus(con)
-    if nexus is None:
-      # Cancel connection
-      con.info("No OpenFlow nexus for " +
-              pox.lib.util.dpidToStr(msg.datapath_id))
-      con.disconnect()
-      return
-    con.ofnexus = nexus
-
-    #TODO: Add a timeout for finish_connecting
-
-    if con.ofnexus.miss_send_len is not None:
-      con.send(of.ofp_set_config(miss_send_len =
-                                    con.ofnexus.miss_send_len))
-    if con.ofnexus.clear_flows_on_connect:
-      con.send(of.ofp_flow_mod(match=of.ofp_match(),command=of.OFPFC_DELETE))
-
-    self._barrier = of.ofp_barrier_request()
-    con.send(self._barrier)
+    pass
 
     # To support old versions of cbench, just finish connecting here.
     #self._finish_connecting(con)
 
   def handle_PORT_STATUS (self, con, msg): #A
-    if con._deferred_port_status is None: return
-    con.msg("Got early port status message for port %s" % (msg.desc.port_no,))
-    con._deferred_port_status.append(msg)
+    pass
 
   def _finish_connecting (self, con):
-    con.ofnexus._connect(con)
-    con.info("connected")
-    con.connect_time = time.time()
-    con.handlers = _default_handlers.handlers
-    con.ofnexus.raiseEventNoErrors(ConnectionHandshakeComplete, con)
-
-    e = con.ofnexus.raiseEventNoErrors(ConnectionUp, con, con.features)
-    if e is None or e.halt != True:
-      con.raiseEventNoErrors(ConnectionUp, con, con.features)
-
-    if con.features:
-      e = con.ofnexus.raiseEventNoErrors(FeaturesReceived, con, con.features)
-      if e is None or e.halt != True:
-        con.raiseEventNoErrors(FeaturesReceived, con, con.features)
-
-    # Now that we're connected, raise deferred events, if any
-    if con._deferred_port_status:
-      h = con.handlers[of.OFPT_PORT_STATUS]
-      for msg in con._deferred_port_status:
-        h(con,msg)
-      con._deferred_port_status = None
+    pass
 
 statsHandlerMap = {
   of.OFPST_DESC : handle_OFPST_DESC,
@@ -421,7 +277,7 @@ class DeferredSender (threading.Thread):
     self.start()
 
   def _handle_GoingDownEvent (self, event):
-    self._waker.ping()
+    pass
 
   def _sliceup (self, data):
     """
@@ -677,7 +533,7 @@ class PortCollection (object):
     return iter(self.keys())
 
   def iterkeys (self):
-    return iter(self.keys())
+    pass
 
   def __contains__ (self, index):
     try:
@@ -694,13 +550,13 @@ class PortCollection (object):
     return [(k,self[k]) for k in self.keys()]
 
   def iterkeys (self):
-    return iter(self.keys())
+    pass
   def itervalues (self):
-    return iter(self.values())
+    pass
   def iteritems (self):
-    return iter(self.items())
+    pass
   def has_key (self, k):
-    return k in self
+    pass
   def get (self, k, default=None):
     try:
       return self[k]
@@ -794,10 +650,7 @@ class Connection (EventMixin):
 
   @property
   def eth_addr (self):
-    dpid = self.dpid
-    if self.dpid is None:
-      raise RuntimeError("eth_addr not available")
-    return EthAddr("%012x" % (dpid & 0xffFFffFFffFF,))
+    pass
 
   def fileno (self):
     return self.sock.fileno()
@@ -813,12 +666,7 @@ class Connection (EventMixin):
     """
     Log a message about aborted (no DPID) disconnects
     """
-    assert Connection._aborted_connections > 0
-    msg = str(Connection._aborted_connections) + " connection"
-    if Connection._aborted_connections != 1: msg += "s"
-    msg += " aborted"
-    log.debug(msg)
-    Connection._aborted_connections = 0
+    pass
 
   def disconnect (self, msg = 'disconnected', defer_event = False):
     """
@@ -952,37 +800,7 @@ class Connection (EventMixin):
   def _incoming_stats_reply (self, ofp):
     # This assumes that you don't receive multiple stats replies
     # to different requests out of order/interspersed.
-    if not ofp.is_last_reply:
-      if ofp.type not in [of.OFPST_FLOW, of.OFPST_TABLE,
-                                of.OFPST_PORT, of.OFPST_QUEUE]:
-        log.error("Don't know how to aggregate stats message of type " +
-                  str(ofp.type))
-        self._previous_stats = []
-        return
-
-    if len(self._previous_stats) != 0:
-      if ((ofp.xid == self._previous_stats[0].xid) and
-          (ofp.type == self._previous_stats[0].type)):
-        self._previous_stats.append(ofp)
-      else:
-        log.error("Was expecting continued stats of type %i with xid %i, " +
-                  "but got type %i with xid %i" %
-                  (self._previous_stats_reply.xid,
-                    self._previous_stats_reply.type,
-                    ofp.xid, ofp.type))
-        self._previous_stats = [ofp]
-    else:
-      self._previous_stats = [ofp]
-
-    if ofp.is_last_reply:
-      handler = statsHandlerMap.get(self._previous_stats[0].type, None)
-      s = self._previous_stats
-      self._previous_stats = []
-      if handler is None:
-        log.warn("No handler for stats of type " +
-                 str(self._previous_stats[0].type))
-        return
-      handler(self, s)
+    pass
 
   def __str__ (self):
     #return "[Con " + str(self.ID) + "/" + str(self.dpid) + "]"
@@ -1041,7 +859,7 @@ class OpenFlow_01_Task (Task):
     core.addListener(pox.core.GoingUpEvent, self._handle_GoingUpEvent)
 
   def _handle_GoingUpEvent (self, event):
-    self.start()
+    pass
 
   def start (self):
     if self.started:
@@ -1205,27 +1023,4 @@ def launch (port=6633, address="0.0.0.0", name=None,
   meanings as with Open vSwitch's old test controller, but they are more
   flexible (e.g., ca-cert can be skipped).
   """
-  if name is None:
-    basename = "of_01"
-    counter = 1
-    name = basename
-    while core.hasComponent(name):
-      counter += 1
-      name = "%s-%s" % (basename, counter)
-
-  if core.hasComponent(name):
-    log.warn("of_01 '%s' already started", name)
-    return None
-
-  global deferredSender
-  if not deferredSender:
-    deferredSender = DeferredSender()
-
-  if of._logger is None:
-    of._logger = core.getLogger('libopenflow_01')
-
-  l = OpenFlow_01_Task(port = int(port), address = address,
-                       ssl_key = private_key, ssl_cert = certificate,
-                       ssl_ca_cert = ca_cert)
-  core.register(name, l)
-  return l
+  pass

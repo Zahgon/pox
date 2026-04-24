@@ -52,12 +52,11 @@ class MessageBoxer (object):
     for m in methods.split():
       def f (m):
         def f2 (*args, **kw):
-          return getattr(module, m)(*args,**kw)
+          pass
         def f4 (*args, **kw):
-          _ = kw.pop('_', None)
-          tk.do_ex(getattr(module, m), rv = _, args=args, kw=kw)
+          pass
         def f5 (_, *args, **kw):
-          tk.do_ex(f2, rv = _, args=args, kw=kw)
+          pass
         return f4,f5
       a,b = f(m)
       setattr(self, m, a)
@@ -127,13 +126,4 @@ class Tk (object):
 
 
 def launch ():
-  from . import boot
-  core.registerNew(Tk)
-  boot.set_main_function(core.tk.run)
-
-  """
-  def pr (msg):
-    print "From Tk:", msg
-  core.callDelayed(5,lambda: core.tk.dialog.showinfo_cb(pr,
-      "Hello", "Hello, World!"))
-  """
+  pass

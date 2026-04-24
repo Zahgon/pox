@@ -48,27 +48,7 @@ log = core.getLogger()
 
 
 def _handle_PacketIn (event):
-  packet = event.parsed
-
-  if event.port > of.OFPP_MAX:
-    log.debug("Ignoring special port %s", event.port)
-    return
-
-  # Add to source table
-  msg = nx.nx_flow_mod()
-  msg.match.of_eth_src = packet.src
-  msg.actions.append(nx.nx_action_resubmit.resubmit_table(table = 1))
-  event.connection.send(msg)
-
-  # Add to destination table
-  msg = nx.nx_flow_mod()
-  msg.table_id = 1
-  msg.match.of_eth_dst = packet.src
-  msg.actions.append(of.ofp_action_output(port = event.port))
-  event.connection.send(msg)
-
-  log.info("Learning %s on port %s of %s"
-           % (packet.src, event.port, event.connection))
+  pass
 
 
 def _handle_ConnectionUp (event):
@@ -79,48 +59,8 @@ def _handle_ConnectionUp (event):
   # and our responses may not work!
 
   # Turn on Nicira packet_ins
-  msg = nx.nx_packet_in_format()
-  event.connection.send(msg)
-
-  # Turn on ability to specify table in flow_mods
-  msg = nx.nx_flow_mod_table_id()
-  event.connection.send(msg)
-
-  # Clear second table
-  msg = nx.nx_flow_mod(command=of.OFPFC_DELETE, table_id = 1)
-  event.connection.send(msg)
-
-  # Fallthrough rule for table 0: flood and send to controller
-  msg = nx.nx_flow_mod()
-  msg.priority = 1 # Low priority
-  msg.actions.append(of.ofp_action_output(port = of.OFPP_CONTROLLER))
-  msg.actions.append(nx.nx_action_resubmit.resubmit_table(table = 1))
-  event.connection.send(msg)
-
-  # Fallthrough rule for table 1: flood
-  msg = nx.nx_flow_mod()
-  msg.table_id = 1
-  msg.priority = 1 # Low priority
-  msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
-  event.connection.send(msg)
-
-  def ready (event):
-    if event.ofp.xid != 0x80000000:
-      # Not the right barrier
-      return
-    log.info("%s ready", event.connection)
-    event.connection.addListenerByName("PacketIn", _handle_PacketIn)
-    return EventRemove
-
-  event.connection.send(of.ofp_barrier_request(xid=0x80000000))
-  event.connection.addListenerByName("BarrierIn", ready)
+  pass
 
 
 def launch ():
-  def start ():
-    if not core.NX.convert_packet_in:
-      log.error("PacketIn conversion required")
-      return
-    core.openflow.addListenerByName("ConnectionUp", _handle_ConnectionUp)
-    log.info("Simple NX switch running.")
-  core.call_when_ready(start, ['NX','openflow'])
+  pass

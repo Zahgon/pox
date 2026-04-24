@@ -26,7 +26,7 @@ class Link (object):
     """
     Flips a list of Links so that this node is first in each
     """
-    return Link.order(l, self)
+    pass
 
   @staticmethod
   def order (links, n):
@@ -34,24 +34,14 @@ class Link (object):
     Give a list of Links that each contain node n, flips any links so
     that n is always the first element of the link.
     """
-    r = []
-    for l in links:
-      assert n in l
-      if l._n[0] == n:
-        r.append(l)
-      else:
-        r.append(l.flip())
-    return r
+    pass
 
   def __init__ (self, np1, np2):
     self._n = [np1[0],np2[0]]
     self._p = [np1[1],np2[1]]
 
   def _index (self, i):
-    if i in self._n:
-      i = self._n.index(i)
-    assert i == 0 or i == 1
-    return i
+    pass
 
   def flip (self):
     """
@@ -60,14 +50,14 @@ class Link (object):
     return Link(self[1], self[0])
 
   def port (self, n):
-    return self._p[_index(n)]
+    pass
 
   def other_port (self, n):
     """
     Returns the other end's port.
     See other().
     """
-    return self.other(n)[1]
+    pass
 
   def other (self, n):
     """
@@ -116,7 +106,7 @@ class Node (object):
 
 
 def _void ():
-  return None
+  pass
 
 class LeaveException (RuntimeError):
   pass
@@ -250,50 +240,50 @@ class BinaryOp (Operator):
 class Or (BinaryOp):
   _symbol = "or"
   def _apply (self, l, r):
-    return l or r
+    pass
 
 class And (BinaryOp):
   _symbol = "and"
   def _apply (self, l, r):
-    return l and r
+    pass
 
 class LessThan (BinaryOp):
   _symbol = "<"
   def _apply (self, value):
-    return value < self._value
+    pass
 
 class GreaterThan (BinaryOp):
   _symbol = ">"
   def _apply (self, l, r):
-    return value > self._value
+    pass
 
 class LessThanEqualTo (BinaryOp):
   _symbol = "<="
   def _apply (self, l, r):
-    return value <= self._value
+    pass
 
 class GreaterThanEqualTo (BinaryOp):
   _symbol = "=>"
   def _apply (self, l, r):
-    return value > self._value
+    pass
 
 class Not (UnaryOp):
   def _apply (self, v):
-    return not v
+    pass
 
   def __repr__ (self):
     return "(Not %s)" % (self._operand,)
 
 class Length (UnaryOp):
   def _apply (self, v):
-    return len(v)
+    pass
 
   def __repr__ (self):
     return "len(%s)" % (self._operand,)
 
 class Index (BinaryOp):
   def _apply (self, l, r):
-    return l[r]
+    pass
 
   def __repr__ (self):
     return "%s[%s]" % (self._left, self._right)
@@ -336,12 +326,12 @@ class Equal (NodeOp):
   _symbol = "=="
   def _apply (self, l, r):
     #print "???", repr(l), repr(r), l == r
-    return l == r
+    pass
 
 class Is (NodeOp):
   _symbol = "is"
   def _apply (self, l, r):
-    return l is r
+    pass
 
 class Field (NodeOp):
   def __init__ (self, left, right=_dummy, optional=True):
@@ -350,33 +340,24 @@ class Field (NodeOp):
 
   def _apply (self, l, r):
     #print ">>",self._attr_name,hasattr(n, self._attr_name)
-    do_call = r.endswith("()")
-    if do_call: r = r[:-2]
-    if not hasattr(l, r) and self._optional:
-      raise LeaveException
-    a = getattr(l, r)
-    if do_call: a = a()
-    #print ">>>",a
-    return a
+    pass
 F = Field # Short alias
 
 class IsInstance (NodeOp):
   def _apply (self, l, r):
-    return isinstance(l, r)
+    pass
   def __repr__ (self):
     return "isinstance(%s, %s)" % (self._left, self._right)
 
 class IsType (NodeOp):
   def _apply (self, l, r):
-    if isinstance(r, str):
-      return type(l).__name__ == r
-    return type(l) is r
+    pass
   def __repr__ (self):
     return "type(%s) == %s" % (self._left, self._right)
 
 class ConnectedTo (NodeOp):
   def _apply (self, l, r):
-    return l.connected_to(r)
+    pass
   def __repr__ (self):
     return "%s.connected_to(%s)" % (self._left, self._right)
 
@@ -386,11 +367,11 @@ class InValues (BinaryOp):
     self._optional = optional
 
   def _apply (self, l, r):
-    return l in r.values()
+    pass
 
 class In (BinaryOp):
   def _apply (self, l, r):
-    return l in r
+    pass
 
 class Member (BinaryOp):
   _symbol = "."
@@ -399,9 +380,7 @@ class Member (BinaryOp):
     self._optional = optional
 
   def _apply (self, l, r):
-    if not hasattr(l, r) and self._optional:
-      raise LeaveException
-    return getattr(l, r)
+    pass
 
 
 class Graph (object):
@@ -544,7 +523,7 @@ class Graph (object):
       self.disconnect_nodes(node1, neighbor)
 
   def get_one_link (self, query1=None, query2=(), **kw):
-    return self.get_link(query1, query2, one=True, **kw)
+    pass
 
   def get_link (self, query1=None, query2=(), **kw):
     """
@@ -553,29 +532,11 @@ class Graph (object):
     Equal(F("default"), <value>) to actually check a field called
     "default" on a node.
     """
-    if 'default' in kw:
-      has_default = True
-      default = kw['default']
-      del kw['default']
-    else:
-      has_default = False
-    one = False
-    if 'one' in kw:
-      one = kw['one']
-      del kw['one']
-    assert len(kw) == 0
-    r = self.find_links(query1, query2)
-    if len(r) > 1 and one:
-      raise RuntimeError("More than one match")
-    elif len(r) == 0:
-      if has_default:
-        return default
-      raise RuntimeError("Could not get element")
-    return r[0]
+    pass
 
   def has_link (self, query1=None, query2=()):
     # Really bad implementation.  We can easily scape early.
-    return len(self.find_links(query1, query2)) > 0
+    pass
 
   def _test_node (self, n, args=(), kw={}, link=None):
     #TODO: Should use a special value for unspecified n2
@@ -605,8 +566,7 @@ class Graph (object):
     return r
 
   def get_one (self, *args, **kw):
-    kw['one'] = True
-    return self.get(*args, **kw)
+    pass
 
   def get (self, *args, **kw):
     """
@@ -636,7 +596,7 @@ class Graph (object):
 
   def has (self, *args, **kw):
     # Really bad implementation.  We can easily scape early.
-    return len(self.find(*args,**kw)) > 0
+    pass
 
   def __len__ (self):
     return len(self._g)

@@ -111,27 +111,10 @@ class JSONRPCHandler (SplitRequestHandler):
     self._qx = self.args.get('qx', self._qx)
 
   def _send_auth_header (self):
-    if self.auth_function:
-      self.send_header('WWW-Authenticate',
-                       'Basic realm="%s"' % (self.auth_realm,))
+    pass
 
   def _do_auth (self):
-    if not self.auth_function:
-      return True
-
-    auth = self.headers.get("Authorization", "").strip()
-    success = False
-    if auth.lower().startswith("basic "):
-      try:
-        auth = base64.decodestring(auth[6:].strip()).split(':', 1)
-        success = self.auth_function(auth[0], auth[1])
-      except:
-        pass
-    if not success:
-      self.send_response(401, "Authorization Required")
-      self._send_auth_header()
-      self.end_headers()
-    return success
+    pass
 
   def _translate_error (self, e):
     if not 'error' in e: return
@@ -144,132 +127,10 @@ class JSONRPCHandler (SplitRequestHandler):
         e['origin'] = QX_ORIGIN_METHOD
 
   def _handle (self, data):
-    try:
-      try:
-        service = self
-        if 'services' in self.args:
-          if 'service' in data:
-            service = self.args['services'].get(data['service'], self)
-            self._qx = True # This is a qooxdoo request
-        method = "_exec_" + data.get('method')
-        method = getattr(service, method)
-      except:
-        response = {}
-        response['error'] = {'code':self.ERR_METHOD_NOT_FOUND,
-                             'message':'Method not found'}
-        return response
-
-      params = data.get('params', [])
-      if isinstance(params, dict):
-        kw = params
-        params = []
-      else:
-        kw = data.get('kwparams', {})
-
-      try:
-        r = method(*params,**kw)
-
-        #TODO: jsonrpc version?
-
-        return r
-      except:
-        response = {}
-        t,v,_ = sys.exc_info()
-        response['error'] = {'message': "%s: %s" % (t,v),
-                             'code':self.ERR_METHOD_ERROR}
-        import traceback
-        response['error']['data'] = {'traceback':traceback.format_exc()}
-        log.exception("While handling %s...", data.get('method'))
-        return response
-
-    except:
-      response = {}
-      t,v,_ = sys.exc_info()
-      response['error'] = {'message': "%s: %s" % (t,v),
-                           'code':self.ERR_INTERNAL_ERROR}
-      return response
+    pass
 
   def do_POST (self):
-    if not self._do_auth():
-      return
-
-    dumps_opts = {}
-
-    #FIXME: this is a hack
-    if 'pretty' in self.path:
-      dumps_opts = {'sort_keys':True, 'indent':2}
-
-    def reply (response):
-      orig = response
-      #if not isinstance(response, basestring):
-      if isinstance(response, list):
-        for r in response: self._translate_error(r)
-      else:
-        self._translate_error(response)
-      response = json.dumps(response, default=str, **dumps_opts)
-      response = response.strip()
-      if len(response) and not response.endswith("\n"): response += "\n"
-      try:
-        self.send_response(200, "OK")
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", len(response))
-        self.end_headers()
-        self.wfile.write(response)
-      except IOError as e:
-        if e.errno == 32:
-          if isinstance(orig, dict) and 'error' in orig:
-            log.info("Socket closed when writing error response")
-          else:
-            log.warning("Socket closed when writing response")
-            #log.debug(" response was: " + response)
-        else:
-          log.exception("Exception while trying to send JSON-RPC response")
-        try:
-          self.wfile.close()
-        except:
-          pass
-        return False
-      except:
-        log.exception("Exception while trying to send JSON-RPC response")
-        return False
-      return True
-
-    l = self.headers.get("Content-Length", "")
-    data = ''
-    if l == "":
-      data = self.rfile.read()
-    else:
-      data = self.rfile.read(int(l))
-    try:
-      data = json.loads(data)
-    except:
-      response = {}
-      response['error'] = {'code':self.ERR_PARSE_ERROR,
-                           'message':'Parse error'}
-      return reply(response)
-
-    single = False
-    if not isinstance(data, list):
-      data = [data]
-      single = True
-
-    responses = []
-
-    for req in data:
-      response = self._handle(req) # Should never raise an exception
-      if response is ABORT:
-        return
-      if 'id' in req or 'error' in response:
-        response['id'] = req.get('id')
-        responses.append(response)
-
-    if len(responses) == 0:
-      responses = ''
-    else:
-      if single:
-        responses = responses[0]
-
-    reply(responses)
+    pass
 
 
 class QXJSONRPCHandler (JSONRPCHandler):

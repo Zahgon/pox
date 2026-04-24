@@ -30,32 +30,11 @@ import logging
 import string
 
 def get_level_by_name (level):
-  try:
-    return int(level)
-  except Exception:
-    pass
-
-  if not isinstance(level, str):
-    return None
-  if (len(level) == 0) or (len(level.strip(string.ascii_uppercase)) != 0):
-    return None
-
-  l = getattr(logging, level, None)
-  if not isinstance(l, int):
-    return None
-  return l
+  pass
 
 
 def launch (msg, level="INFO", logger=None, __INSTANCE__=None):
   """
   Logs a message
   """
-  if logger:
-    log = pox.core.core.getLogger(logger)
-  else:
-    log = pox.core.log
-
-  level = get_level_by_name(level)
-  if level is None: level = logging.CRITICAL
-
-  log.log(level, "%s", msg)
+  pass

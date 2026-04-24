@@ -68,26 +68,13 @@ class NXSoftwareSwitch (SoftwareSwitch):
 
     @overrides SoftwareSwitch.rx_message
     """
-
-    self.connection_in_action = connection
-    if not self.check_rights(msg, connection):
-      self.log.warn("Message %s not allowed for slave controller %d", msg,
-                    connection.ID)
-      self.send_vendor_error(connection)
-    else:
-      SoftwareSwitch.rx_message(self, connection, msg)
-
-    self.connection_in_action = None
+    pass
 
   def check_rights (self, ofp, connection):
-    if self.role_by_conn[connection.ID] != nx.NX_ROLE_SLAVE:
-      return True
-    else:
-      return not type(ofp) in _slave_blacklist
+    pass
 
   def send_vendor_error (self, connection):
-    err = of.ofp_error(type=of.OFPET_BAD_REQUEST, code=of.OFPBRC_BAD_VENDOR)
-    connection.send(err)
+    pass
 
   def send (self, message):
     connections_used = []
@@ -122,39 +109,17 @@ class NXSoftwareSwitch (SoftwareSwitch):
     return connections_used
 
   def add_connection (self, connection):
-    self.role_by_conn[connection.ID] = nx.NX_ROLE_OTHER
-    connection.set_message_handler(self.rx_message)
-    self.connections.append(connection)
-    return connection
+    pass
 
   def set_connection (self, connection):
-    self.add_connection(connection)
+    pass
 
   def set_role (self, connection, role):
-    self.role_by_conn[connection.ID] = role
-    if role == nx.NX_ROLE_MASTER:
-      for c in self.connections:
-        if c != connection:
-          self.role_by_conn[c.ID] = nx.NX_ROLE_SLAVE
+    pass
 
   def _rx_hello (self, ofp, connection):
     # Override the usual hello-send logic
-    if connection not in self._sent_hellos:
-      self._sent_hellos.add(connection)
-      self.send_hello(force=True)
+    pass
 
   def _rx_vendor (self, vendor, connection):
-    self.log.debug("Vendor %s %s", self.name, str(vendor))
-    if vendor.vendor == nx.NX_VENDOR_ID:
-      try:
-        data = nx._unpack_nx_vendor(vendor.data)
-        if isinstance(data, nx.nx_role_request):
-          self.set_role(connection, data.role)
-          reply = of.ofp_vendor(xid=vendor.xid, vendor = nx.NX_VENDOR_ID,
-                                data = nx.nx_role_reply(role = data.role))
-          self.send(reply)
-          return
-      except NotImplementedError:
-        self.send_vendor_error(connection)
-    else:
-      return SoftwareSwitch._rx_vendor(self, vendor)
+    pass

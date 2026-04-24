@@ -59,13 +59,7 @@ _load_oui_names()
 
 
 def _compare_helper (self, other, f, rf):
-  t = type(self)
-  try:
-    if isinstance(other, t): ov = other._value
-    else: ov = t(other)._value
-    return getattr(self._value, f)(ov)
-  except Exception:
-    return getattr(other, rf)(self)
+  pass
 
 
 class _AddrBase (object):
@@ -151,50 +145,45 @@ class EthAddr (_AddrBase):
     have a destination MAC address within this range are not relayed by
     bridges conforming to IEEE 802.1D
     """
-    return  ((self._value[0] == 0x01)
-         and (self._value[1] == 0x80)
-         and (self._value[2] == 0xC2)
-         and (self._value[3] == 0x00)
-         and (self._value[4] == 0x00)
-         and (self._value[5] <= 0x0F))
+    pass
 
   @property
   def is_bridge_filtered (self):
-    return self.isBridgeFiltered()
+    pass
 
   def isGlobal (self):
     """
     Returns True if this is a globally unique (OUI enforced) address.
     """
-    return not self.isLocal()
+    pass
 
   def isLocal (self):
     """
     Returns True if this is a locally-administered (non-global) address.
     """
-    return True if (self._value[0] & 2) else False
+    pass
 
   @property
   def is_local (self):
-    return self.isLocal()
+    pass
 
   @property
   def is_global (self):
-    return self.isGlobal()
+    pass
 
   def isMulticast (self):
     """
     Returns True if this is a multicast address.
     """
-    return True if (self._value[0] & 1) else False
+    pass
 
   @property
   def is_multicast (self):
-    return self.isMulticast()
+    pass
 
   @property
   def is_broadcast (self):
-    return self == self.BROADCAST
+    pass
 
   def toRaw (self):
     return self.raw
@@ -204,20 +193,20 @@ class EthAddr (_AddrBase):
     """
     Returns the address as a 6-long bytes object.
     """
-    return self._value
+    pass
 
   def toTuple (self):
-    return self.to_tuple()
+    pass
 
   def to_tuple (self):
     """
     Returns a 6-entry long tuple where each entry is the numeric value
     of the corresponding byte of the address.
     """
-    return tuple((x for x in self._value))
+    pass
 
   def toStr (self, separator = ':', resolveNames  = False):
-    return self.to_str(separator, resolveNames)
+    pass
 
   def to_str (self, separator = ':', resolve_names  = False):
     """
@@ -227,14 +216,7 @@ class EthAddr (_AddrBase):
     If resolve_names is True, it the first three bytes may be replaced by a
     string corresponding to the OUI.
     """
-    if resolve_names and self.is_global:
-      # Don't even bother for local (though it should never match and OUI!)
-      name = _eth_oui_to_name.get(self._value[:3])
-      if name:
-        rest = separator.join('%02x' % (x,) for x in self._value[3:])
-        return name + separator + rest
-
-    return separator.join(('%02x' % (x,) for x in self._value))
+    pass
 
   def __str__ (self):
     return self.toStr()
@@ -303,7 +285,7 @@ class IPAddr (_AddrBase):
 
   def toUnsignedN (self):
     """ A shortcut """
-    return self.toUnsigned(networkOrder = True)
+    pass
 
   def toSigned (self, networkOrder = False):
     """ Return the address as a signed int """
@@ -320,7 +302,7 @@ class IPAddr (_AddrBase):
     """
     Returns the address as a four-character byte string.
     """
-    return struct.pack("i", self._value)
+    pass
 
   def toUnsigned (self, networkOrder = False):
     """
@@ -338,21 +320,21 @@ class IPAddr (_AddrBase):
     """
     The address as an integer in host order.
     """
-    return self.toUnsigned(networkOrder=False)
+    pass
 
   @property
   def unsigned_n (self):
     """
     The address as an integer in network order.
     """
-    return self.toUnsigned(networkOrder=True)
+    pass
 
   def toStr (self):
     """ Return dotted quad representation """
-    return socket.inet_ntoa(self.toRaw())
+    pass
 
   def in_network (self, *args, **kw):
-    return self.inNetwork(*args, **kw)
+    pass
 
   def inNetwork (self, network, netmask = None):
     """
@@ -362,17 +344,7 @@ class IPAddr (_AddrBase):
     parameter), or it can be a tuple of (address,network-bits) like that
     returned by parse_cidr().
     """
-    if type(network) is not tuple:
-      if netmask is not None:
-        network = str(network)
-        network += "/" + str(netmask)
-      n,b = parse_cidr(network)
-    else:
-      n,b = network
-      if type(n) is not IPAddr:
-        n = IPAddr(n)
-
-    return (self.toUnsigned() & ~((1 << (32-b))-1)) == n.toUnsigned()
+    pass
 
   def get_network (self, netmask_or_bits):
     """
@@ -380,18 +352,15 @@ class IPAddr (_AddrBase):
 
     Returns (IPAddr,preifx_bits)
     """
-    prefix = parse_cidr("255.255.255.255/" + str(netmask_or_bits),
-                        allow_host=True)[1]
-    netmask = cidr_to_netmask(prefix).unsigned_h
-    return (IPAddr(self.unsigned_h & netmask, networkOrder=False),prefix)
+    pass
 
   @property
   def is_broadcast (self):
-    return self == IP_BROADCAST
+    pass
 
   @property
   def is_multicast (self):
-    return ((self.toSigned(networkOrder = False) >> 24) & 0xe0) == 0xe0
+    pass
 
   @property
   def multicast_ethernet_address (self):
@@ -400,10 +369,7 @@ class IPAddr (_AddrBase):
 
     Assumes this is, in fact, a multicast IP address!
     """
-    if not self.is_multicast:
-      raise RuntimeError("No multicast EthAddr for non-multicast IPAddr!")
-    n = self.toUnsigned(networkOrder = False) & 0x7fffff
-    return EthAddr("01005e" + ("%06x" % (n)))
+    pass
 
   def __str__ (self):
     return self.toStr()
@@ -541,7 +507,7 @@ class IPAddr6 (_AddrBase):
 
   @property
   def raw (self):
-    return self._value
+    pass
 
   @property
   def ipv4 (self):
@@ -561,38 +527,35 @@ class IPAddr6 (_AddrBase):
 
   @property
   def num (self):
-    o = 0
-    for b in self._value:
-      o = (o << 8) | b
-    return o
+    pass
 
   @property
   def is_multicast (self):
-    return self.in_network('ff00::/8')
+    pass
 
   @property
   def is_global_unicast (self):
-    return self.in_network('2000::/3')
+    pass
 
   @property
   def is_unique_local_unicast (self):
-    return self.in_network('fc00::/7')
+    pass
 
   @property
   def is_link_unicast (self):
-    return self.in_network('fe80::/10')
+    pass
 
   @property
   def is_ipv4 (self):
-    return self.in_network('::/80')
+    pass
 
   @property
   def is_ipv4_compatible (self):
-    return self.in_network('::/96')
+    pass
 
   @property
   def is_ipv4_mapped (self):
-    return self.in_network('::ffff:0:0/96')
+    pass
 
   @property
   def is_reserved (self):
@@ -606,17 +569,7 @@ class IPAddr6 (_AddrBase):
     of network bits.  e.g., 255.255.255.0 -> 24
     Raise exception if subnet mask is not CIDR-compatible.
     """
-    if isinstance(dq, str):
-      dq = IPAddr6(dq)
-    v = dq.num
-    c = 0
-    while v & (1<<127):
-      c += 1
-      v <<= 1
-    v = v & ((1<<128)-1)
-    if v != 0:
-      raise RuntimeError("Netmask %s is not CIDR-compatible" % (dq,))
-    return c
+    pass
 
   @staticmethod
   def cidr_to_netmask (bits):
@@ -675,16 +628,7 @@ class IPAddr6 (_AddrBase):
     tuple of textual address and numeric netbits
     tuple of IPAddr6 and numeric netbits
     """
-    if type(network) is not tuple:
-      if netmask is not None:
-        network = str(network) + "/" + str(netmask)
-      n,b = self.parse_cidr(network)
-    else:
-      n,b = network
-      if type(n) is not IPAddr6:
-        n = IPAddr6(n)
-
-    return (self.num & ~((1 << (128-b))-1)) == n.num
+    pass
 
   def to_str (self, zero_drop = True, section_drop = True, ipv4 = None):
     """
@@ -698,49 +642,7 @@ class IPAddr6 (_AddrBase):
     by passing ipv4=True; this probably only makes sense if .is_ipv4_compatible
     (or .is_ipv4_mapped, of course).
     """
-    o = [lo | (hi<<8) for hi,lo in
-         (self._value[i:i+2] for i in range(0,16,2))]
-
-    if (ipv4 is None and self.is_ipv4_mapped) or ipv4:
-      ip4part = o[-2:]
-      o[-2:] = [1,1]
-      def finalize (s):
-        s = s.rsplit(':',2)[0]
-        return s + ":" + str(IPAddr(self.raw[-4:]))
-    else:
-      def finalize (s):
-        return s
-
-    if zero_drop:
-      def fmt (n):
-        return ':'.join('%x' % (b,) for b in n)
-    else:
-      def fmt (n):
-        return ':'.join('%04x' % (b,) for b in n)
-
-    if section_drop:
-      z = [] # [length,pos] of zero run
-      run = None
-      for i,b in enumerate(o):
-        if b == 0:
-          if run is None:
-            run = [1,i]
-            z.append(run)
-          else:
-            run[0] += 1
-        else:
-          run = None
-
-      if len(z):
-        # Sloppy!
-        max_len = max([length for length,pos in z])
-        if max_len > 1:
-          z = [pos for length,pos in z if length == max_len]
-          z.sort()
-          pos = z[0]
-          return finalize('::'.join((fmt(o[:pos]),fmt(o[pos+max_len:]))))
-
-    return finalize(fmt(o))
+    pass
 
   def __str__ (self):
     return self.to_str()
@@ -760,11 +662,7 @@ class IPAddr6 (_AddrBase):
     object.__setattr__(self, a, v)
 
   def set_mac (self, eth):
-    e = list(EthAddr(eth).toTuple())
-    e[0] ^= 2
-    e[3:3] = [0xff,0xfe]
-    e = bytes(e)
-    return IPAddr6.from_raw(self._value[:8]+e)
+    pass
 
 
 IPAddr6.UNDEFINED = IPAddr6('::')
@@ -784,17 +682,7 @@ def netmask_to_cidr (dq):
   of network bits.  e.g., 255.255.255.0 -> 24
   Raise exception if subnet mask is not CIDR-compatible.
   """
-  if isinstance(dq, str):
-    dq = IPAddr(dq)
-  v = dq.toUnsigned(networkOrder=False)
-  c = 0
-  while v & 0x80000000:
-    c += 1
-    v <<= 1
-  v = v & 0xffFFffFF
-  if v != 0:
-    raise RuntimeError("Netmask %s is not CIDR-compatible" % (dq,))
-  return c
+  pass
 
 
 def cidr_to_netmask (bits):

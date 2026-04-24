@@ -65,223 +65,10 @@ DEFAULT_CTL_PORT = 7791
 _switches = {}
 
 def _do_ctl (event):
-  r = _do_ctl2(event)
-  if r is None:
-    r = "Okay."
-  event.worker.send(r + "\n")
+  pass
 
 def _do_ctl2 (event):
-  def errf (msg, *args):
-    raise RuntimeError(msg % args)
-
-  args = event.args
-
-  def ra (low, high = None):
-    if high is None: high = low
-    if len(args) < low or len(args) > high:
-      raise RuntimeError("Wrong number of arguments")
-    return False
-
-  def get_sw (arg, fail=True):
-    r = _switches.get(arg)
-    if r is not None: return r
-    try:
-      dpid = str_to_dpid(arg)
-    except Exception:
-      raise RuntimeError("No such switch as %s" % (arg,))
-    r = core.datapaths.get(dpid)
-    if r is None and fail:
-      raise RuntimeError("No such switch as %s" % (dpid_to_str(dpid),))
-    return r
-
-  try:
-    if event.first == "add-port":
-      ra(1,2)
-      if len(event.args) == 1 and len(_switches) == 1:
-        sw = _switches[first_of(_switches.keys())]
-        p = args[0]
-      else:
-        ra(2)
-        sw = get_sw(args[0])
-        p = args[1]
-      sw.add_interface(p, start=True, on_error=errf)
-    elif event.first == "del-port":
-      ra(1,2)
-      if len(event.args) == 1:
-        for sw in _switches.values():
-          for p in sw.ports.values():
-            if p.name == event.args[0]:
-              sw.remove_interface(event.args[0])
-              return
-        raise RuntimeError("No such interface")
-      sw = _switches[event.args[0]]
-      sw.remove_interface(args[1])
-    elif event.first == "show":
-      ra(0)
-      s = []
-      for sw in _switches.values():
-        s.append("Switch %s" % (sw.name,))
-        for no,p in sw.ports.items():
-          stats = sw.port_stats[no]
-          s.append(" %3s %-16s rx:%-20s tx:%-20s" % (no, p.name,
-                     "%s (%s)" % (stats.rx_packets,stats.rx_bytes),
-                     "%s (%s)" % (stats.tx_packets,stats.tx_bytes)))
-      return "\n".join(s)
-
-    elif event.first == "show-table":
-      ra(0,1)
-      sw = None
-      if len(args) == 1:
-        sw = get_sw(args[0])
-      s = []
-      for switch in _switches.values():
-        if sw is None or switch is sw:
-          s.append("== " + switch.name + " ==")
-          for entry in switch.table.entries:
-            s.append(entry.show())
-      return "\n".join(s)
-
-    elif event.first == "wire-port":
-      # Wire a virtual port to a channel: wire-port [sw] port channel
-      ra(2,3)
-      if len(event.args) == 2 and len(_switches) == 1:
-        sw = _switches[first_of(_switches.keys())]
-        p = args[0]
-        c = args[1]
-      else:
-        ra(3)
-        sw = get_sw(args[0])
-        p = args[1]
-        c = args[2]
-      for port in sw.ports.values():
-        if port.name == p:
-          px = sw.px.get(port.port_no)
-          if not isinstance(px, VirtualPort):
-            raise RuntimeError("Port is not a virtual port")
-          px.channel = c
-          return
-      raise RuntimeError("No such interface")
-
-    elif event.first == "unwire-port":
-      # Unhook the virtual port: unwire-port [sw] port
-      ra(1,2)
-      if len(event.args) == 1 and len(_switches) == 1:
-        sw = _switches[first_of(_switches.keys())]
-        p = args[0]
-      else:
-        ra(2)
-        sw = get_sw(args[0])
-        p = args[1]
-      for port in sw.ports.values():
-        if port.name == p:
-          px = sw.px.get(port.port_no)
-          if not isinstance(px, VirtualPort):
-            raise RuntimeError("Port is not a virtual port")
-          px.channel = None
-          return
-      raise RuntimeError("No such interface")
-
-    elif event.first == "sendraw":
-      # sendraw sw src-port <raw hex bytes>
-      if len(args) < 3: ra(3)
-      sw = get_sw(args[0])
-      p = args[1]
-      data = []
-      for x in args[2:]:
-        x = x.strip()
-        #print "<",x,">"
-        if len(x) < 2:
-          data.append(int(x,16))
-        else:
-          assert len(x) & 1 == 0
-          for y,z in zip(x[::2],x[1::2]):
-            data.append(int(y+z,16))
-      data = "".join(chr(x) for x in data)
-      for port in sw.ports.values():
-        if port.name == p:
-          px = sw.px.get(port.port_no)
-          sw._pcap_rx(px, data, 0, 0, len(data))
-          return
-      raise RuntimeError("No such interface")
-
-    elif event.first == "ping":
-      # ping [sw] dst-mac dst-ip [-I src-ip] [--port src-port]
-      #      [-s byte-count] [-p pad] [-t ttl]
-      from pox.lib.addresses import EthAddr, IPAddr
-      kvs = dict(s=(int,56), p=(str,chr(0x42)), port=(str,""),
-                 I=(IPAddr,IPAddr("1.1.1.1")), t=(int,64))
-      ai = list(event.args)
-      ai.append(None)
-      args[:] = []
-      skip = False
-      for k,v in zip(ai[:-1],ai[1:]):
-        if skip:
-          skip = False
-          continue
-        if not k.startswith("-"):
-          args.append(k)
-          continue
-        k = k.lstrip("-").replace("-","_")
-        if "=" in k:
-          k,v = k.split("=", 1)
-        else:
-          if v is None:
-            raise RuntimeError("Expected argument for '%s'" % (k,))
-          skip = True
-        if k not in kvs:
-          raise RuntimeError("Unknown option '%s'" % (k,))
-        kvs[k] = (kvs[k][0],kvs[k][0](v))
-      kvs = {k:v[1] for k,v in kvs.items()}
-      ra(2,3)
-      pad = (kvs['p'] * kvs['s'])[:kvs['s']]
-      if len(args) == 2 and len(_switches) == 1:
-        sw = _switches[first_of(_switches.keys())]
-        mac,ip = args
-      else:
-        ra(3)
-        sw = get_sw(args[0])
-        mac,ip = args[1:]
-      mac = EthAddr(mac)
-      ip = IPAddr(ip)
-      srcport = kvs['port']
-
-      for p in sw.ports.values():
-        if srcport == "" or p.name == srcport:
-          echo = pkt.echo()
-          echo.payload = pad
-
-          icmp = pkt.icmp()
-          icmp.type = pkt.TYPE_ECHO_REQUEST
-          icmp.payload = echo
-
-          # Make the IP packet around it
-          ipp = pkt.ipv4()
-          ipp.protocol = ipp.ICMP_PROTOCOL
-          ipp.srcip = kvs['I']
-          ipp.dstip = ip
-          ipp.ttl = kvs['t']
-          ipp.payload = icmp
-
-          # Ethernet around that...
-          e = pkt.ethernet()
-          e.src = p.hw_addr
-          e.dst = mac
-          e.type = e.IP_TYPE
-          e.payload = ipp
-
-          data = e.pack()
-
-          px = sw.px.get(p.port_no)
-          sw._pcap_rx(px, data, 0, 0, len(data))
-          return
-      raise RuntimeError("No such interface")
-
-    else:
-      raise RuntimeError("Unknown command")
-
-  except Exception as e:
-    log.exception("While processing command")
-    return "Error: " + str(e)
+  pass
 
 
 def launch (address = '127.0.0.1', port = 6633, max_retry_delay = 16,
@@ -290,31 +77,7 @@ def launch (address = '127.0.0.1', port = 6633, max_retry_delay = 16,
   """
   Launches a switch
   """
-
-  if ctl_port:
-    if ctl_port is True:
-      ctl_port = DEFAULT_CTL_PORT
-
-    if core.hasComponent('ctld'):
-      if core.ctld.port != ctl_port:
-        raise RuntimeError("Only one ctl_port is allowed")
-      # We can reuse the exiting one
-    else:
-      # Create one...
-      from . import ctl
-      ctl.server(ctl_port)
-      core.ctld.addListenerByName("CommandEvent", _do_ctl)
-
-  _ports = ports.strip()
-  def up (event):
-    ports = [p for p in _ports.split(",") if p]
-
-    sw = do_launch(PCapSwitch, address, port, max_retry_delay, dpid,
-                   ports=ports, extra_args=extra,
-                   magic_virtual_port_names = True)
-    _switches[sw.name] = sw
-
-  core.addListenerByName("UpEvent", up)
+  pass
 
 
 class VirtualPort (object):
@@ -334,40 +97,31 @@ class VirtualPort (object):
 
   @property
   def hw_addr (self):
-    return self.phy.hw_addr
+    pass
 
   @property
   def device (self):
-    return self.phy.name
+    pass
 
   @property
   def port_no (self):
-    return self.phy.port_no
+    pass
 
   @property
   def channel (self):
-    return self._channel
+    pass
 
   @channel.setter
   def channel (self, channel):
-    if self._channel in self._patchbay:
-      # Remove from old channel
-      self._patchbay[self._channel].remove(self)
-    self._channel = channel
-    if channel is None: return
-    if channel not in self._patchbay:
-      self._patchbay[channel] = []
-    self._patchbay[channel].append(self)
+    pass
 
   @property
   def is_link_down (self):
-    return (self.phy.state & of.OFPPS_LINK_DOWN) != 0
+    pass
 
   @is_link_down.setter
   def is_link_down (self, value):
-    if value != self.is_link_down:
-      self.phy.state ^= of.OFPPS_LINK_DOWN
-    assert self.is_link_down == value
+    pass
 
   def _packet_hook (self, data):
     if not self.debug: return
@@ -524,46 +278,16 @@ class PCapSwitch (ExpireMixin, SoftwareSwitchBase):
     return px
 
   def remove_interface (self, name_or_num):
-    if isinstance(name_or_num, str):
-      for no,p in self.px.items():
-        if p.device == name_or_num:
-          self.remove_interface(no)
-          return
-      raise ValueError("No such interface")
-
-    px = self.px[name_or_num]
-    px.stop()
-    px.port_no = None
-    self.delete_port(name_or_num)
+    pass
 
   def _handle_GoingDownEvent (self, event):
-    self.q.put(None)
+    pass
 
   def _consumer_threadproc (self):
-    timeout = 3
-    while core.running:
-      try:
-        data = self.q.get(timeout=timeout)
-      except:
-        continue
-      if data is None:
-        # Signal to quit
-        break
-      batch = []
-      while True:
-        self.q.task_done()
-        port_no,data = data
-        data = ethernet(data)
-        batch.append((data,port_no))
-        try:
-          data = self.q.get(block=False)
-        except:
-          break
-      core.callLater(self.rx_batch, batch)
+    pass
 
   def rx_batch (self, batch):
-    for data,port_no in batch:
-      self.rx_packet(data, port_no)
+    pass
 
   def _pcap_rx (self, px, data, sec, usec, length):
     if px.port_no is None: return
@@ -575,6 +299,4 @@ class PCapSwitch (ExpireMixin, SoftwareSwitchBase):
 
     This is called by the more general _output_packet().
     """
-    px = self.px.get(port_no)
-    if not px: return
-    px.inject(packet)
+    pass

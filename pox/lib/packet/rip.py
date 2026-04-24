@@ -155,15 +155,11 @@ class RIPEntry (packet_base):
 
   @property
   def netmask (self):
-    return self._netmask
+    pass
 
   @netmask.setter
   def netmask (self, netmask):
-    if isinstance(netmask, int):
-      netmask = cidr_to_netmask(netmask)
-    elif not isintance(netmask, IPAddr):
-      netmask = IPAddr(netmask)
-    self._netmask = netmask
+    pass
 
   @property
   def network_bits (self):
@@ -171,11 +167,11 @@ class RIPEntry (packet_base):
     Returns the number of network bits.  May raise an exception
     if the netmask is not CIDR-compatible.
     """
-    return netmask_to_cidr(self._netmask)
+    pass
 
   @network_bits.setter
   def network_bits (self, bits):
-    self._netmask = cidr_to_netmask(bits)
+    pass
 
   def hdr (self, payload):
     s = struct.pack("!HHiiii", self.address_family, self.route_tag,

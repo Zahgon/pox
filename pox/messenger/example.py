@@ -45,8 +45,7 @@ class UpperService (object):
     self._handle_MessageReceived(event, event.msg)
 
   def _handle_ConnectionClosed (self, event):
-    self.con.removeListeners(self.listeners)
-    self.parent.clients.pop(self.con, None)
+    pass
 
   def _handle_MessageReceived (self, event, msg):
     self.count += 1
@@ -67,16 +66,12 @@ class UpperBot (ChannelBot):
 class EchoBot (ChannelBot):
   count = 0
   def _exec_msg (self, event, value):
-    self.count += 1
-    self.reply(event, msg = "%i: %s" % (self.count, value))
+    pass
 
 
 class GreetBot (ChannelBot):
   def _join (self, event, connection, msg):
-    from random import choice
-    greet = choice(['hello','aloha','greeings','hi',"g'day"])
-    greet += ", " + str(connection)
-    self.send({'greeting':greet})
+    pass
 
 
 class MessengerExample (object):
@@ -85,31 +80,11 @@ class MessengerExample (object):
 
   def _all_dependencies_met (self):
     # Set up the chat channel
-    chat_channel = core.MessengerNexus.get_channel("chat")
-    def handle_chat (event, msg):
-      m = str(msg.get("msg"))
-      chat_channel.send({"msg":str(event.con) + " says " + m})
-    chat_channel.addListener(MessageReceived, handle_chat)
-
-    # Set up the time channel...
-    time_channel = core.MessengerNexus.get_channel("time")
-    import time
-    def timer ():
-      time_channel.send({'msg':"It's " + time.strftime("%I:%M:%S %p")})
-    from pox.lib.recoco import Timer
-    Timer(10, timer, recurring=True)
-
-    # Set up the "upper" service
-    UpperBot(core.MessengerNexus.get_channel("upper"))
-
-    # Make GreetBot invitable to other channels using "invite"
-    core.MessengerNexus.default_bot.add_bot(GreetBot)
+    pass
 
   def _handle_MessengerNexus_ChannelCreate (self, event):
-    if event.channel.name.startswith("echo_"):
-      # Ah, it's a new echo channel -- put in an EchoBot
-      EchoBot(event.channel)
+    pass
 
 
 def launch ():
-  MessengerExample()
+  pass

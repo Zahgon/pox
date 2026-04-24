@@ -127,7 +127,7 @@ def send_arp_request (connection, ip, port = of.OFPP_FLOOD,
 class ARPRequest (Event):
   @property
   def dpid (self):
-    return self.connection.dpid
+    pass
 
   def __str__ (self):
     return "ARPRequest for %s on %s"  % (self.ip, dpid_to_str(self.dpid))
@@ -148,7 +148,7 @@ class ARPRequest (Event):
 class ARPReply (Event):
   @property
   def dpid (self):
-    return self.connection.dpid
+    pass
 
   def __str__ (self):
     return "ARPReply for %s on %s"  % (self.reply.protodst,
@@ -205,54 +205,13 @@ class ARPHelper (EventMixin):
     return send_arp_reply(reply_to, mac, src_mac)
 
   def _handle_GoingUpEvent (self, event):
-    core.openflow.addListeners(self)
-    log.debug("Up...")
+    pass
 
   def _handle_ConnectionUp (self, event):
-    if self._install_flow:
-      fm = of.ofp_flow_mod()
-      fm.priority += self._rule_priority_adjustment
-      fm.match.dl_type = ethernet.ARP_TYPE
-      fm.actions.append(of.ofp_action_output(port=of.OFPP_CONTROLLER))
-      event.connection.send(fm)
+    pass
 
   def _handle_PacketIn (self, event):
-    dpid = event.connection.dpid
-    inport = event.port
-    packet = event.parsed
-
-    a = packet.find('arp')
-    if not a: return
-
-    if a.prototype != arp.PROTO_TYPE_IP:
-      return
-
-    if a.hwtype != arp.HW_TYPE_ETHERNET:
-      return
-
-    if a.opcode == arp.REQUEST:
-      log.debug("%s ARP request %s => %s", dpid_to_str(dpid),
-                a.protosrc, a.protodst)
-
-      src_mac = _default_mac
-      ev = ARPRequest(event.connection, a, src_mac,
-                      self.eat_packets, inport)
-      self.raiseEvent(ev)
-      if ev.reply is not None:
-        log.debug("%s answering ARP for %s" % (dpid_to_str(dpid),
-            str(a.protodst)))
-        self.send_arp_reply(event, ev.reply, ev.reply_from)
-        return EventHalt if ev.eat_packet else None
-
-    elif a.opcode == arp.REPLY:
-      log.debug("%s ARP reply %s => %s", dpid_to_str(dpid),
-                a.protosrc, a.hwsrc)
-
-      ev = ARPReply(event.connection,a,self.eat_packets,inport)
-      self.raiseEvent(ev)
-      return EventHalt if ev.eat_packet else None
-
-    return EventHalt if self.eat_packets else None
+    pass
 
 
 def launch (no_flow=False, eat_packets=True, use_port_mac=False,
@@ -265,11 +224,4 @@ def launch (no_flow=False, eat_packets=True, use_port_mac=False,
   that is used in the reply (otherwise, it comes from the same place as
   requests).
   """
-  use_port_mac = str_to_bool(use_port_mac)
-  reply_from_dst = str_to_bool(reply_from_dst)
-
-  request_src = True if use_port_mac else False
-  reply_src = None if reply_from_dst else request_src
-
-  core.registerNew(ARPHelper, str_to_bool(no_flow), str_to_bool(eat_packets),
-                   request_src, reply_src)
+  pass

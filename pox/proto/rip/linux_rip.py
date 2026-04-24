@@ -102,17 +102,13 @@ class LinuxRIPRouter (RIPRouter, Task):
     core.listen_to_dependencies(self)
 
   def _handle_core_DownEvent (self, e):
-    self.log.debug("Removing table")
-    runfail(*("ip route flush table " + str(self.tableno)).split())
-    runfail(*("ip rule del lookup " + str(self.tableno)).split())
+    pass
 
   def _handle_core_UpEvent (self, e):
-    self.send_timer = Timer(self.SEND_TIMER, self._on_send, recurring=True)
-    self.start()
+    pass
 
   def _on_send (self):
-    self.log.debug("Sending timed update")
-    self.send_updates(force=True)
+    pass
 
   def init_socks (self):
     def create_sock (iface, addr):
@@ -249,18 +245,9 @@ class LinuxRIPRouter (RIPRouter, Task):
       runfail(*cmd.split())
 
   def send_updates (self, force):
-    direct = self._get_port_ip_map()
-
-    for sock,iface in self.sock_to_iface.items():
-      dests = direct.get(iface)
-      responses = self.get_responses(dests, force=force)
-      self.log.debug("Sending %s RIP packets via %s", len(responses), iface)
-      for r in responses:
-        sock.sendto(r.pack(), (str(RIP.RIP2_ADDRESS), RIP.RIP_PORT))
-
-    self._mark_all_clean()
+    pass
 
 
 
 def launch ():
-  core.registerNew(LinuxRIPRouter)
+  pass

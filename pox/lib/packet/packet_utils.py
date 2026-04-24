@@ -125,7 +125,4 @@ def ipproto_to_str (t):
   """
   Given a numeric IP protocol number (or IPv6 next_header), give human name
   """
-  if t in _ipproto_to_str:
-    return _ipproto_to_str[t]
-  else:
-    return "%02x" % (t,)
+  pass

@@ -73,11 +73,11 @@ class IOWorker (object):
 
   def _handle_close (self):
     """ Can be overridden OR you can just use close_handler """
-    self._custom_close_handler(self)
+    pass
 
   def _handle_connect (self):
     """ Can be overridden OR you can just use connect_handler """
-    self._custom_connect_handler(self)
+    pass
 
   def _do_exception (self, loop):
     self.close()
@@ -145,61 +145,43 @@ class IOWorker (object):
     """
     Number of available bytes to read()
     """
-    return len(self.receive_buf)
+    pass
 
   @property
   def connect_handler (self):
-    if self._custom_connect_handler is _dummy_handler:
-      return None
-    return self._custom_connect_handler
+    pass
 
   @connect_handler.setter
   def connect_handler (self, callback):
     """
     Handler to call when connected
     """
-    # Not sure if this is a good idea, but it might be...
-    if self.connect_handler is not None or callback is not None:
-      log.debug("Resetting connect_handler on %s?", self)
-    if callback is None: callback = _dummy_handler
-    self._custom_connect_handler = callback
+    pass
 
   @property
   def close_handler (self):
-    if self._custom_close_handler is _dummy_handler:
-      return None
-    return self._custom_close_handler
+    pass
 
   @close_handler.setter
   def close_handler (self, callback):
     """
     Handler to call when closing
     """
-    # Not sure if this is a good idea, but it might be...
-    if self.close_handler is not None or callback is not None:
-      log.debug("Resetting close_handler on %s?", self)
-    if callback is None: callback = _dummy_handler
-    self._custom_close_handler = callback
+    pass
 
   @property
   def rx_handler (self):
-    if self._custom_rx_handler is _dummy_handler:
-      return None
-    return self._custom_rx_handler
+    pass
 
   @rx_handler.setter
   def rx_handler (self, callback):
     """
     Handler to call when data is available to read
     """
-    # Not sure if this is a good idea, but it might be...
-    if self.rx_handler is not None or callback is not None:
-      log.debug("Resetting rx_handler on %s?", self)
-    if callback is None: callback = _dummy_handler
-    self._custom_rx_handler = callback
+    pass
 
   def send_fast (self, data):
-    return self.send(data)
+    pass
 
   def send (self, data):
     """ Send data.  Fire and forget. """
@@ -239,7 +221,7 @@ class IOWorker (object):
   @property
   def _ready_to_send (self):
     # called by Select loop
-    return len(self.send_buf) > 0 or self._connecting
+    pass
 
   def _consume_send_buf (self, l):
     # Throw out the first l bytes of the send buffer
@@ -291,20 +273,7 @@ class RecocoIOWorker (IOWorker):
     Must only be called from the same cooperative context as the
     IOWorker.
     """
-    if len(self.send_buf)==0 and not self._connecting and not self.closed:
-      try:
-        l = self.socket.send(data, socket.MSG_DONTWAIT)
-        if l == len(self.send_buf):
-          return
-        data = data[l]
-      except socket.error as e:
-        if e.errno != errno.EAGAIN:
-          log.error("Socket error: " + e.strerror)
-          self.close()
-          return
-
-    IOWorker.send(self, data)
-    self.pinger.ping()
+    pass
 
   def send (self, data):
     IOWorker.send(self, data)

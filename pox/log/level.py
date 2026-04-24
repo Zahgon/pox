@@ -23,26 +23,4 @@ def launch (__INSTANCE__=None, **kw):
   For example, to turn off the verbose web logging, try:
   pox.py web.webcore log.level --web.webcore=INFO
   """
-  for k,v in kw.items():
-    if v is True:
-      # This means they did something like log.level --DEBUG
-      v = k
-      k = "" # Root logger
-    try:
-      v = int(v)
-    except:
-      old = v
-      v = logging.DEBUG
-      def dofail ():
-        core.getLogger(k).error("Bad log level: %s. Defaulting to DEBUG.", old)
-
-      if (len(old) == 0) or (len(old.strip(string.ascii_uppercase)) != 0):
-        dofail()
-      else:
-        vv = getattr(logging, old, None)
-        if not isinstance(vv, int):
-          dofail()
-        else:
-          v = vv
-
-    core.getLogger(k).setLevel(v)
+  pass

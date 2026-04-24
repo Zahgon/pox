@@ -140,11 +140,11 @@ class ethernet(packet_base):
   @staticmethod
   def getNameForType (ethertype):
     """ Returns a string name for a numeric ethertype """
-    return ethtype_to_str(ethertype)
+    pass
 
   @property
   def effective_ethertype (self):
-    return self._get_effective_ethertype(self)
+    pass
 
   @staticmethod
   def _get_effective_ethertype (self):
@@ -155,19 +155,10 @@ class ethernet(packet_base):
     we want the type from that deeper header.  This is kind of ugly here in
     the packet library, but it should make user code somewhat simpler.
     """
-    if not self.parsed:
-      return ethernet.INVALID_TYPE
-    if self.type == ethernet.VLAN_TYPE or type(self.payload) == ethernet._llc:
-      try:
-        return self.payload.effective_ethertype
-      except:
-        return ethernet.INVALID_TYPE
-    return self.type
+    pass
 
   def _to_str(self):
-    s = ''.join(('[',str(EthAddr(self.src)),'>',str(EthAddr(self.dst)),' ',
-                ethernet.getNameForType(self.type),']'))
-    return s
+    pass
 
   def hdr(self, payload):
     dst = self.dst

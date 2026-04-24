@@ -98,24 +98,7 @@ class ShutdownHelper (object):
     core.add_listener(self._handle_GoingDownEvent)
 
   def _handle_GoingDownEvent (self, event):
-    if self.sockets is None: return
-    cc = dict(self.sockets)
-    self.sockets.clear()
-    #if cc: log.debug("Shutting down %s socket(s)", len(cc))
-    for s,(r,w,c) in cc.items():
-      try:
-        if r and w: flags = socket.SHUT_RDWR
-        elif r: flags = socket.SHUT_RD
-        elif w: slags = socket.SHUT_WR
-        if r or w: s.shutdown(flags)
-      except Exception as e:
-        pass
-      if c:
-        try:
-          s.close()
-        except Exception:
-          pass
-    if cc: log.debug("Shut down %s socket(s)", len(cc))
+    pass
 
   def register (self, socket, read=True, write=False, close=False):
     if self.sockets is None:
@@ -176,40 +159,22 @@ class POXCookieGuardMixin (object):
   _pox_cookieguard_consume_post = True
 
   def _cookieguard_maybe_consume_post (self):
-    if self._pox_cookieguard_consume_post is False: return
-    if self.command != "POST": return
-
-    # Read rest of input to avoid connection reset
-    cgi.FieldStorage( fp = self.rfile, headers = self.headers,
-                      environ={ 'REQUEST_METHOD':'POST' } )
+    pass
 
   def _get_cookieguard_cookie (self):
-    return self._pox_cookieguard_secret
+    pass
 
   def _get_cookieguard_cookie_path (self, requested):
     """
     Gets the path to be used for the cookie
     """
-
-    return "/"
+    pass
 
   def _do_cookieguard_explict_continuation (self, requested, target):
     """
     Sends explicit continuation page
     """
-    log.debug("POX CookieGuard bouncer doesn't have correct cookie; "
-              "Sending explicit continuation page")
-    self.send_response(200)
-    self.send_header("Content-type", "text/html")
-    self.end_headers()
-    self.wfile.write(("""
-      <html><head><title>POX CookieGuard</title></head>
-      <body>
-      A separate site has linked you here.  If this was intentional,
-      please <a href="%s">continue to %s</a>.
-      </body>
-      </html>
-      """ % (target, cgi.escape(target))).encode())
+    pass
 
   def _do_cookieguard_set_cookie (self, requested, bad_cookie):
     """
@@ -217,70 +182,10 @@ class POXCookieGuardMixin (object):
 
     bad_cookie is True if the cookie was set but is wrong.
     """
-    self._cookieguard_maybe_consume_post()
-    self.send_response(307, "Temporary Redirect")
-
-    #TODO: Set Secure automatically if being accessed by https.
-    #TODO: Set Path cookie attribute
-    self.send_header("Set-Cookie",
-                     "%s=%s; SameSite=Strict; HttpOnly; path=%s"
-                     % (self._pox_cookieguard_cookie_name,
-                        self._get_cookieguard_cookie(),
-                        self._get_cookieguard_cookie_path(requested)))
-
-    self.send_header("Location", self._pox_cookieguard_bouncer + "?"
-                                 + quote_plus(requested))
-    self.end_headers()
+    pass
 
   def _do_cookieguard (self, override=None):
-    do_cg = override
-    if do_cg is None: do_cg = getattr(self, 'pox_cookieguard', True)
-    if not do_cg: return True
-
-    requested = self.raw_requestline.split()[1].decode("latin-1")
-
-    cookies = SimpleCookie(self.headers.get('Cookie'))
-    cgc = cookies.get(self._pox_cookieguard_cookie_name)
-    if cgc and cgc.value == self._get_cookieguard_cookie():
-      if requested.startswith(self._pox_cookieguard_bouncer + "?"):
-        log.debug("POX CookieGuard cookie is valid -- bouncing")
-        qs = requested.split("?",1)[1]
-
-        self._cookieguard_maybe_consume_post()
-        self.send_response(307, "Temporary Redirect")
-        self.send_header("Location", unquote_plus(qs))
-        self.end_headers()
-        return False
-
-      log.debug("POX CookieGuard cookie is valid")
-      return True
-    else:
-      # No guard cookie or guard cookie is wrong
-      if requested.startswith(self._pox_cookieguard_bouncer + "?"):
-        # Client probably didn't save cookie
-        qs = requested.split("?",1)[1]
-        target = unquote_plus(qs)
-        bad_qs = quote_plus(target) != qs
-        if bad_qs or self.command != "GET":
-          log.warn("Bad POX CookieGuard bounce; possible attack "
-                   "(method:%s cookie:%s qs:%s)",
-                   self.command,
-                   "bad" if cgc else "missing",
-                   "bad" if bad_qs else "okay")
-          self.send_response(400, "Bad Request")
-          self.end_headers()
-          return False
-
-        self._do_cookieguard_explict_continuation(requested, target)
-        return False
-
-      if cgc:
-        log.debug("POX CookieGuard got wrong cookie -- setting new one")
-      else:
-        log.debug("POX CookieGuard got no cookie -- setting one")
-
-      self._do_cookieguard_set_cookie(requested, bool(cgc))
-      return False
+    pass
 
 
 import http.server
@@ -323,16 +228,10 @@ class SplitRequestHandler (BaseHTTPRequestHandler):
     This is displayed, for example, in the "Web Prefixes" list of the default
     POX web server page.
     """
-    def shorten (s, length=100):
-      s = str(s)
-      if len(s) > length: s = s[:length] + "..."
-      return s
-    return shorten(str(args))
+    pass
 
   def version_string (self):
-    return "POX/%s(%s) %s" % (".".join(map(str, core.version)),
-                              core.version_name,
-                              BaseHTTPRequestHandler.version_string(self))
+    pass
 
   def handle_one_request (self):
     raise RuntimeError("Not supported")
@@ -341,23 +240,16 @@ class SplitRequestHandler (BaseHTTPRequestHandler):
     raise RuntimeError("Not supported")
 
   def _split_dispatch (self, command, handler = None):
-    if handler is None: handler = self
-    mname = 'do_' + self.command
-    if not hasattr(handler, mname):
-        self.send_error(501, "Unsupported method (%r)" % self.command)
-        return
-    method = getattr(handler, mname)
-    return method()
+    pass
 
   def log_request (self, code = '-', size = '-'):
-    weblog.debug(self.prefix + (':"%s" %s %s' %
-              (self.requestline, str(code), str(size))))
+    pass
 
   def log_error (self, fmt, *args):
-    weblog.error(self.prefix + ':' + (fmt % args))
+    pass
 
   def log_message (self, fmt, *args):
-    weblog.info(self.prefix + ':' + (fmt % args))
+    pass
 
 
 _favicon = ("47494638396110001000c206006a5797927bc18f83ada9a1bfb49ceabda"
@@ -373,50 +265,20 @@ class CoreHandler (SplitRequestHandler):
   """
   def do_GET (self):
     """Serve a GET request."""
-    self.do_content(True)
+    pass
 
   def do_HEAD (self):
     """Serve a HEAD request."""
-    self.do_content(False)
+    pass
 
   def do_content (self, is_get):
-    if self.path == "/":
-      self.send_info(is_get)
-    elif self.path.startswith("/favicon."):
-      self.send_favicon(is_get)
-    else:
-      self.send_error(404, "File not found on CoreHandler")
+    pass
 
   def send_favicon (self, is_get = False):
-    self.send_response(200)
-    self.send_header("Content-type", "image/gif")
-    self.send_header("Content-Length", str(len(_favicon)))
-    self.end_headers()
-    if is_get:
-      self.wfile.write(_favicon)
+    pass
 
   def send_info (self, is_get = False):
-    r = "<html><head><title>POX</title></head>\n"
-    r += "<body>\n<h1>POX Webserver</h1>\n<h2>Components</h2>\n"
-    r += "<ul>"
-    for k in sorted(core.components):
-      v = core.components[k]
-      r += "<li>%s - %s</li>\n" % (cgi.escape(str(k)), cgi.escape(str(v)))
-    r += "</ul>\n\n<h2>Web Prefixes</h2>"
-    r += "<ul>"
-    m = [list(map(cgi.escape, map(str, [x[0],x[1],x[1].format_info(x[3])])))
-         for x in self.args.matches]
-    m.sort()
-    for v in m:
-      r += "<li><a href='{0}'>{0}</a> - {1} {2}</li>\n".format(*v)
-    r += "</ul></body></html>\n"
-
-    self.send_response(200)
-    self.send_header("Content-type", "text/html")
-    self.send_header("Content-Length", str(len(r)))
-    self.end_headers()
-    if is_get:
-      self.wfile.write(r.encode())
+    pass
 
 
 class StaticContentHandler (SplitRequestHandler, SimpleHTTPRequestHandler):
@@ -433,67 +295,11 @@ class StaticContentHandler (SplitRequestHandler, SimpleHTTPRequestHandler):
   def send_head (self):
     # We override this and handle the directory redirection case because
     # we want to include the per-split prefix.
-    path = self.translate_path(self.path)
-    if os.path.isdir(path):
-      if not self.path.endswith('/'):
-        self.send_response(302)
-        self.send_header("Location", self.prefix + self.path + "/")
-        self.end_headers()
-        return None
-    return SimpleHTTPRequestHandler.send_head(self)
+    pass
 
   def list_directory (self, dirpath):
     # dirpath is an OS path
-    try:
-      d = os.listdir(dirpath)
-    except OSError as e:
-      if e.errno == errno.EACCES:
-        self.send_error(403, "This directory is not listable")
-      elif e.errno == errno.ENOENT:
-        self.send_error(404, "This directory does not exist")
-      else:
-        self.send_error(400, "Unknown error")
-      return None
-    d.sort(key=str.lower)
-    r = StringIO()
-    r.write("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n")
-    path = posixpath.join(self.prefix, cgi.escape(self.path).lstrip("/"))
-    r.write("<html><head><title>" + path + "</title></head>\n")
-    r.write("<body><pre>")
-    parts = path.rstrip("/").split("/")
-    r.write('<a href="/">/</a>')
-    for i,part in enumerate(parts):
-      link = urllib.parse.quote("/".join(parts[:i+1]))
-      if i > 0: part += "/"
-      r.write('<a href="%s">%s</a>' % (link, cgi.escape(part)))
-    r.write("\n" + "-" * (0+len(path)) + "\n")
-
-    dirs = []
-    files = []
-    for f in d:
-      if f.startswith("."): continue
-      if os.path.isdir(os.path.join(dirpath, f)):
-        dirs.append(f)
-      else:
-        files.append(f)
-
-    def entry (n, rest=''):
-      link = urllib.parse.quote(n)
-      name = cgi.escape(n)
-      r.write('<a href="%s">%s</a>\n' % (link,name+rest))
-
-    for f in dirs:
-      entry(f, "/")
-    for f in files:
-      entry(f)
-
-    r.write("</pre></body></html>")
-    r.seek(0)
-    self.send_response(200)
-    self.send_header("Content-Type", "text/html")
-    self.send_header("Content-Length", str(len(r.getvalue())))
-    self.end_headers()
-    return BytesIO(r.read().encode())
+    pass
 
   def translate_path (self, path, include_prefix = True):
     """
@@ -502,44 +308,11 @@ class StaticContentHandler (SplitRequestHandler, SimpleHTTPRequestHandler):
     Odd path elements (e.g., ones that contain local filesystem path
     separators) are stripped.
     """
-
-    def fixpath (p):
-      o = []
-      skip = 0
-      while True:
-        p,tail = posixpath.split(p)
-        if p in ('/','') and tail == '': break
-        if tail in ('','.', os.path.curdir, os.path.pardir): continue
-        if os.path.sep in tail: continue
-        if os.path.altsep and os.path.altsep in tail: continue
-        if os.path.splitdrive(tail)[0] != '': continue
-
-        if tail == '..':
-          skip += 1
-          continue
-        if skip:
-          skip -= 1
-          continue
-        o.append(tail)
-      o.reverse()
-      return o
-
-    # Remove query string / fragment
-    if "?" in path: path = path[:path.index("?")]
-    if "#" in path: path = path[:path.index("#")]
-    path = fixpath(path)
-    if path:
-      path = os.path.join(*path)
-    else:
-      path = ''
-    if include_prefix:
-      path = os.path.join(os.path.abspath(self.args['root']), path)
-    return path
+    pass
 
 
 def wrapRequestHandler (handlerClass):
-  return type("Split" + handlerClass.__name__,
-              (SplitRequestHandler, handlerClass, object), {})
+  pass
 
 
 from http.server import CGIHTTPRequestHandler
@@ -552,13 +325,7 @@ class SplitCGIRequestHandler (SplitRequestHandler,
   """
   __lock = threading.Lock()
   def _split_dispatch (self, command):
-    with self.__lock:
-      olddir = os.getcwd()
-      try:
-        os.chdir(self.args)
-        return SplitRequestHandler._split_dispatch(self, command)
-      finally:
-        os.chdir(olddir)
+    pass
 
 
 class SplitterRequestHandler (BaseHTTPRequestHandler, BasicAuthMixin,
@@ -586,75 +353,25 @@ class SplitterRequestHandler (BaseHTTPRequestHandler, BasicAuthMixin,
       _shutdown_helper.unregister(self.connection)
 
   def log_request (self, code = '-', size = '-'):
-    weblog.debug('splitter:"%s" %s %s',
-                 self.requestline, str(code), str(size))
+    pass
 
   def log_error (self, fmt, *args):
-    weblog.error('splitter:' + fmt % args)
+    pass
 
   def log_message (self, fmt, *args):
-    weblog.info('splitter:' + fmt % args)
+    pass
 
   def version_string (self):
-    return "POX/%s(%s) %s" % (".".join(map(str, core.version)),
-                              core.version_name,
-                              BaseHTTPRequestHandler.version_string(self))
+    pass
 
   def _check_basic_auth (self, user, password):
-    if self.basic_auth_info.get(user) == password: return True
-    import web.authentication
-    web.authentication.log.warn("Authentication failure")
-    return False
+    pass
 
   def _get_auth_realm (self):
-    return "POX"
+    pass
 
   def handle_one_request(self):
-    _shutdown_helper.register(self.connection)
-    self.raw_requestline = self.rfile.readline()
-    if not self.raw_requestline:
-        self.close_connection = 1
-        return
-    if not self.parse_request(): # An error code has been sent, just exit
-        return
-
-    if not self._do_auth(): return
-
-    handler = None
-
-    while True:
-      for m in self.server.matches:
-        if self.path.startswith(m[0]):
-          #print m,self.path
-          handler = m[1](self, m[0], m[3])
-          #pb = self.rec.getPlayback()
-          #handler = m[1](pb, *self.args[1:])
-          _setAttribs(self, handler)
-          if m[2]:
-            # Trim. Behavior is not "perfect"
-            handler.path = self.path[len(m[0]):]
-            if m[0].endswith('/'):
-              handler.path = '/' + handler.path
-          break
-
-      if handler is None:
-        handler = self
-        if not self.path.endswith('/'):
-          # Handle splits like directories
-          self.send_response(302)
-          self.send_header("Location", self.path + "/")
-          self.end_headers()
-          break
-
-      break
-
-    override_cg = getattr(handler, "pox_cookieguard", None)
-    if not self._do_cookieguard(override_cg): return
-
-    event = WebRequest(self, handler)
-    self.server.raiseEventNoErrors(event)
-    if event.handler:
-      return event.handler._split_dispatch(self.command)
+    pass
 
 
 class WebRequest (Event):
@@ -731,24 +448,7 @@ class SplitThreadedServer(ThreadingMixIn, HTTPServer, EventMixin):
     of the calling module.
     For an example, see the launch() function in this module.
     """
-    if not www_path.startswith('/'): www_path = '/' + www_path
-
-    if local_path is None:
-      local_path = www_path[1:]
-      if relative:
-        local_path = os.path.basename(local_path)
-    if relative:
-      import inspect
-      path = inspect.stack()[1][1]
-      path = os.path.dirname(path)
-      local_path = os.path.join(path, local_path)
-
-    local_path = os.path.abspath(local_path)
-
-    log.debug("Serving %s at %s", local_path, www_path)
-
-    self.set_handler(www_path, StaticContentHandler,
-                     {'root':local_path}, True);
+    pass
 
 
 class InternalContentHandler (SplitRequestHandler):
@@ -787,79 +487,12 @@ class InternalContentHandler (SplitRequestHandler):
   args_content_lookup = True # Set to false to disable lookup on .args
 
   def do_GET (self):
-    self.do_response(True)
+    pass
   def do_HEAD (self):
-    self.do_response(False)
+    pass
 
   def do_response (self, is_get):
-    path = "<Unknown>"
-    try:
-      path = self.path.lstrip("/").replace("/","__").replace(".","_")
-      r = getattr(self, "GET_" + path, None)
-      if r is None and self.args is not None and self.args_content_lookup:
-        try:
-          r = self.args[self.path]
-        except Exception:
-          try:
-            dummy = self.args[self.path + "/"]
-            # Ahh... directory without trailing slash.  Let's redirect.
-            self.send_response(302, "Redirect to directory")
-            self.send_header('Location', self.parent.path + '/')
-            self.end_headers()
-            return
-          except Exception:
-            pass
-        if r is None:
-          r = getattr(self.args, "GET_" + path, None)
-      if r is None:
-        r = getattr(self, "GETANY", None)
-        if r is None and self.args is not None:
-          try:
-            r = self.args[None]
-          except Exception:
-            pass
-          if r is None:
-            r = getattr(self.args, "GETANY", None)
-      if callable(r):
-        r = r(self)
-
-      if r is None:
-        self.send_error(404, "File not found")
-        return
-
-      response_headers = []
-
-      if len(r) >= 2 and len(r) <= 3 and not isinstance(r, (str,bytes)):
-        ct = r[0]
-        if len(r) >= 3:
-          response_headers = r[2]
-        r = r[1]
-      else:
-        if isinstance(r, str): r = r.encode()
-        if r.lstrip().startswith(b'{') and r.rstrip().endswith(b'}'):
-          ct = "application/json"
-        elif b"<html" in r[:255]:
-          ct = "text/html"
-        else:
-          ct = "text/plain"
-      if isinstance(r, str): r = r.encode()
-    except Exception as exc:
-      self.send_error(500, "Internal server error")
-      msg = "%s failed trying to get '%s'" % (type(self).__name__, path)
-      if str(exc): msg += ": " + str(exc)
-      log.debug(msg)
-      return
-
-    self.send_response(200)
-    self.send_header("Content-type", ct)
-    self.send_header("Content-Length", str(len(r)))
-    if isinstance(response_headers, dict):
-      response_headers = list(response_headers.items())
-    for hname,hval in response_headers:
-      self.send_header(hname, hval)
-    self.end_headers()
-    if is_get:
-      self.wfile.write(r)
+    pass
 
 
 class FileUploadHandler (SplitRequestHandler):
@@ -868,57 +501,20 @@ class FileUploadHandler (SplitRequestHandler):
   """
   def do_GET (self):
     """Serve a GET request."""
-    self.send_form(True)
+    pass
 
   def do_HEAD (self):
     """Serve a HEAD request."""
-    self.send_form(False)
+    pass
 
   def send_form (self, is_get = False, msg = None):
-    r = "<html><head><title>POX</title></head>\n"
-    r += "<body>\n<h1>POX File Upload</h1>\n"
-    if msg:
-      r += msg
-      r += "\n<hr />\n"
-    r += "<form method='POST' enctype='multipart/form-data' action='?'>\n"
-    r += "File to upload: <input type='file' name='upload'>\n"
-    r += "<input type='submit' value='Upload!' /></form>\n"
-    r += "</body></html>\n"
-
-    self.send_response(200)
-    self.send_header("Content-type", "text/html")
-    self.send_header("Content-Length", str(len(r)))
-    self.end_headers()
-    if is_get:
-      self.wfile.write(r.encode())
+    pass
 
   def do_POST (self):
-    mime,params = cgi.parse_header(self.headers.get('content-type'))
-    if mime != 'multipart/form-data':
-      self.send_error(400, "Expected form data")
-      return
-    #query = cgi.parse_multipart(self.rfile, params)
-    #data = query.get("upload")
-    data = cgi.FieldStorage( fp = self.rfile, headers = self.headers,
-                             environ={ 'REQUEST_METHOD':'POST' } )
-    if not data or "upload" not in data:
-      self.send_error(400, "Expected upload data")
-      return
-    uploadfield = data["upload"]
-
-    msg = self.on_upload(uploadfield.filename, uploadfield.file)
-
-    self.send_form(True, msg=msg)
+    pass
 
   def on_upload (self, filename, datafile):
-    data = datafile.read()
-    import hashlib
-    h = hashlib.md5()
-    h.update(data)
-    hc = h.hexdigest()
-    msg = "Received file '%s'.  bytes:%s md5:%s" % (filename, len(data), hc)
-    log.warn(msg)
-    return msg
+    pass
 
 
 def upload_test (save=False):
@@ -927,22 +523,7 @@ def upload_test (save=False):
 
   --save will save the file using its MD5 for the filename
   """
-  class SaveUploader (FileUploadHandler):
-    def on_upload (self, filename, datafile):
-      import io
-      data = datafile.read()
-      datafile = io.BytesIO(data)
-      ret = super().on_upload(filename, datafile)
-      import hashlib
-      h = hashlib.md5()
-      h.update(data)
-      h = h.hexdigest().upper()
-      with open("FILE_UPLOAD_" + h, "wb") as f:
-        f.write(data)
-      return ret
-  handler = SaveUploader if save else FileUploadHandler
-
-  core.WebServer.set_handler("/upload_test", handler)
+  pass
 
 
 def launch (address='', port=8000, static=False, ssl_server_key=None,
@@ -965,66 +546,4 @@ def launch (address='', port=8000, static=False, ssl_server_key=None,
     documentation for more on this, but the short story is that disabling
     it will make your server much more vulnerable to CSRF attacks.
   """
-
-  if no_cookieguard:
-    SplitterRequestHandler.pox_cookieguard = False
-    assert no_cookieguard is True, "--no-cookieguard takes no argument"
-
-  def expand (f):
-    if isinstance(f, str): return os.path.expanduser(f)
-    return f
-  ssl_server_key = expand(ssl_server_key)
-  ssl_server_cert = expand(ssl_server_cert)
-  ssl_client_certs = expand(ssl_client_certs)
-
-  httpd = SplitThreadedServer((address, int(port)), SplitterRequestHandler,
-                              ssl_server_key=ssl_server_key,
-                              ssl_server_cert=ssl_server_cert,
-                              ssl_client_certs=ssl_client_certs)
-  core.register("WebServer", httpd)
-  httpd.set_handler("/", CoreHandler, httpd, True)
-  #httpd.set_handler("/foo", StaticContentHandler, {'root':'.'}, True)
-  #httpd.set_handler("/f", StaticContentHandler, {'root':'pox'}, True)
-  #httpd.set_handler("/cgis", SplitCGIRequestHandler, "pox/web/www_root")
-  if static is True:
-    httpd.add_static_dir('static', 'www_root', relative=True)
-  elif static is False:
-    pass
-  else:
-    static = static.split(",")
-    for entry in static:
-      if entry.lower() == "":
-        httpd.add_static_dir('static', 'www_root', relative=True)
-        continue
-      if ':' not in entry:
-        directory = entry
-        prefix = os.path.split(directory)
-        if prefix[1] == '':
-          prefix = os.path.split(prefix[0])
-        prefix = prefix[1]
-        assert prefix != ''
-      else:
-        prefix,directory = entry.split(":")
-      directory = os.path.expanduser(directory)
-      httpd.add_static_dir(prefix, directory, relative=False)
-
-  def run ():
-    try:
-      msg = "https" if httpd.ssl_enabled else "http"
-      msg += "://%s:%i" % httpd.socket.getsockname()
-      log.info("Listening at " + msg)
-      httpd.serve_forever()
-    except:
-      pass
-    log.info("Server quit")
-
-  def go_up (event):
-    thread = threading.Thread(target=run)
-    thread.daemon = True
-    thread.start()
-
-  def go_down (event):
-    httpd.shutdown()
-
-  core.addListenerByName("GoingUpEvent", go_up)
-  core.addListenerByName("GoingDownEvent", go_down)
+  pass

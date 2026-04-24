@@ -48,30 +48,7 @@ _pis = 0
 _pos = 0
 
 def pi_cb (data, parser):
-  global _pis, _pos
-  packet = pkt.ethernet(data)
-  if packet.find('tcp'):
-    if packet.find('tcp').dstport == _of_port or \
-       packet.find('tcp').srcport == _of_port:
-      p = packet.find('tcp').payload
-      assert p[0] == '\x01'
-      t = ord(p[1])
-      packet_length = ord(p[2]) << 8 | ord(p[3])
-      if packet_length != len(p):
-        log.error("%s != %s" % (packet_length, len(p)))
-      if t == of.OFPT_PACKET_IN:
-        if _out_only: return
-        l,p = of.ofp_packet_in.unpack_new(p)
-        _pis += 1
-      elif t == of.OFPT_PACKET_OUT:
-        if _in_only: return
-        l,p = of.ofp_packet_out.unpack_new(p)
-        _pos += 1
-      else:
-        return
-      assert l == len(p)
-
-      _writer.write(p.data, time=parser._time, wire_size=parser._wire_size)
+  pass
 
 
 def launch (infile, outfile, in_only=False, out_only = False):
@@ -79,15 +56,4 @@ def launch (infile, outfile, in_only=False, out_only = False):
   For stripping PI/PO data
 
   """
-  global _writer, _of_port, _in_only, _out_only
-  _in_only = in_only
-  _out_only = out_only
-
-  data = open(infile, "r").read()
-  p = pxparse.PCapParser(callback=pi_cb)
-  _writer = pxwriter.PCapRawWriter(open(outfile, "w"))
-  p.feed(data)
-
-  log.info("%i packet_ins, %i packet_outs", _pis, _pos)
-
-  core.quit()
+  pass

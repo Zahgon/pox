@@ -209,198 +209,126 @@ class Interface (object):
 
   @property
   def name (self):
-    return self._name.rstrip("\0")
+    pass
 
   @name.setter
   def name (self, value):
-    if len(value) > IFNAMESIZ: raise RuntimeError("Name too long")
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "s", self.name)
-    ifr += value
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, SIOCSIFNAME, ifr)
-    self._name = value
+    pass
 
   @property
   def ipv6_enabled (self):
-    f = file("/proc/sys/net/ipv6/conf/%s/disable_ipv6" % (self.name,), "r")
-    with f:
-      return f.read()[0] == "0" # Note inversion!
+    pass
 
   @ipv6_enabled.setter
   def ipv6_enabled (self, value):
-    f = file("/proc/sys/net/ipv6/conf/%s/disable_ipv6" % (self.name,), "w")
-    with f:
-      f.write("0" if value else "1") # Note inversion!
+    pass
 
   @property
   def ip_forwarding (self):
-    f = file("/proc/sys/net/ipv4/conf/%s/forwarding" % (self.name,), "r")
-    with f:
-      return f.read()[0] == "1"
+    pass
 
   @ip_forwarding.setter
   def ip_forwarding (self, value):
-    f = file("/proc/sys/net/ipv4/conf/%s/forwarding" % (self.name,), "w")
-    with f:
-      f.write("1" if value else "0")
+    pass
 
   @property
   def mtu (self):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "s", self.name)
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, SIOCGIFMTU, ifr)
-    return struct.unpack("I", ret[IFNAMESIZ:][:4])[0]
+    pass
 
   @mtu.setter
   def mtu (self, value):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "sI", self.name, value)
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, SIOCSIFMTU, ifr)
+    pass
 
   @property
   def flags (self):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "s", self.name)
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, SIOCGIFFLAGS, ifr)
-    return struct.unpack("H", ret[IFNAMESIZ:IFNAMESIZ+2])[0]
+    pass
 
   @flags.setter
   def flags (self, value):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "sH", self.name, value)
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, SIOCSIFFLAGS, ifr)
+    pass
 
   def set_flags (self, flags, on=True):
-    if on:
-      self.flags |= flags
-    else:
-      self.unset_flags(flags)
+    pass
 
   def unset_flags (self, flags):
-    self.flags = self.flags & (flags ^ 0xffFF)
+    pass
 
   @property
   def promiscuous (self):
-    return bool(self.flags & IFF_PROMISC)
+    pass
 
   @promiscuous.setter
   def promiscuous (self, value):
-    self.set_flags(IFF_PROMISC, value)
+    pass
 
   @property
   def is_up (self):
-    return (self.flags & IFF_UP) != 0
+    pass
 
   @is_up.setter
   def is_up (self, value):
-    self.set_flags(IFF_UP, value)
+    pass
 
   @property
   def is_running (self):
-    return (self.flags & IFF_RUNNING) != 0
+    pass
 
   @property
   def arp_enabled (self):
-    return (self.flags & IFF_NOARP) == 0
+    pass
 
   @arp_enabled.setter
   def arp_enabled (self, value):
-    self.set_flags(IFF_NOARP, not value)
+    pass
 
   @property
   def ip_addr (self):
-    try:
-      return self._ioctl_get_ipv4(SIOCGIFADDR)
-    except IOError as e:
-      if e.errno == 99: return None
-      raise
+    pass
 
   @ip_addr.setter
   def ip_addr (self, value):
-    return self._ioctl_set_ipv4(SIOCSIFADDR, value)
+    pass
 
   @property
   def netmask (self):
-    try:
-      return self._ioctl_get_ipv4(SIOCGIFNETMASK)
-    except IOError as e:
-      if e.errno == 99: return None
-      raise
+    pass
 
   @netmask.setter
   def netmask (self, value):
-    return self._ioctl_set_ipv4(SIOCSIFNETMASK, value)
+    pass
 
   @property
   def broadcast_addr (self):
-    try:
-      return self._ioctl_get_ipv4(SIOCGIFBRDADDR)
-    except IOError as e:
-      if e.errno == 99: return None
-      raise
+    pass
 
   @broadcast_addr.setter
   def broadcast_addr (self, value):
-    return self._ioctl_set_ipv4(SIOCSIFBRDADDR, value)
+    pass
 
   @property
   def eth_addr (self):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "s", self.name)
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, SIOCGIFHWADDR, ifr)
-    sa = ret[IFNAMESIZ:] # sockaddr
-    return self._get_eth(sa)
+    pass
 
   @eth_addr.setter
   def eth_addr (self, value):
-    value = EthAddr(value).raw
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "sH", self.name, ARPHRD_ETHER)
-    ifr += value # Append to sockaddr
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, SIOCSIFHWADDR, ifr)
+    pass
 
   def _ioctl_get_ipv4 (self, which):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "s", self.name)
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, which, ifr)
-    return self._get_ipv4(ret[IFNAMESIZ:])
+    pass
 
   def _ioctl_set_ipv4 (self, which, value):
-    value = IPAddr(value)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ifr = struct.pack(str(IFNAMESIZ) + "sHHI", self.name, socket.AF_INET, 0,
-                      value.toUnsigned(networkOrder=True))
-    ifr += "\0" * (IFREQ_SIZE - len(ifr))
-    ret = ioctl(sock, which, ifr)
+    pass
 
   @staticmethod
   def _get_ipv4 (sa):
-    sa_family = struct.unpack("H", sa[:2])[0]
-    if sa_family == socket.AF_INET:
-      return IPAddr(sa[4:8])
-    else:
-      raise RuntimeError("Unsupported hardware type %s for %s (expected %s)"
-                         % (sa_family, self, socket.AF_INET))
+    pass
 
   @staticmethod
   def _get_eth (sa):
-    sa_family = struct.unpack("H", sa[:2])[0]
-    if sa_family == ARPHRD_ETHER:
-      return EthAddr(sa[2:8])
-    else:
-      raise RuntimeError("Unsupported hardware type %s (expected %s)"
-                         % (sa_family, ARPHRD_ETHER))
+    pass
 
   def add_default_route (self, *args, **kw):
-    return self.add_route("0.0.0.0/0", *args, **kw)
+    pass
 
   def add_route (self, network, gateway=None, dev=(), metric=0):
     """
@@ -408,7 +336,7 @@ class Interface (object):
 
     If dev is unspecified, it defaults to this device
     """
-    return self._add_del_route(network, gateway, dev, metric, SIOCADDRT)
+    pass
 
   def del_route (self, network, gateway=None, dev=(), metric=0):
     """
@@ -416,7 +344,7 @@ class Interface (object):
 
     If dev is unspecified, it defaults to this device
     """
-    return self._add_del_route(network, gateway, dev, metric, SIOCDELRT)
+    pass
 
   def _add_del_route (self, network, gateway=None, dev=(), metric=0,
                       command=None):
@@ -425,32 +353,7 @@ class Interface (object):
 
     If dev is unspecified, it defaults to this device
     """
-    r = rtentry()
-    if isinstance(network, tuple):
-      addr,mask = network
-      addr = str(addr)
-      if isinstance(mask, int):
-        mask = cidr_to_netmask(mask)
-      mask = str(mask)
-      network = "%s/%s" % (addr,mask)
-    host = False
-    if isinstance(network, IPAddr) or (isinstance(network, str)
-                                       and "/" not in network):
-      host = True
-    network,bits = parse_cidr(network)
-    r.rt_dst = network
-    r.rt_genmask = cidr_to_netmask(bits)
-    if gateway is not None:
-      r.rt_gateway = IPAddr(gateway)
-      r.rt_flags |= r.RTF_GATEWAY
-    r.rt_metric = metric
-    if dev is (): dev = self
-    if isinstance(dev, Interface): dev = dev.name
-    if dev: r.rt_dev = dev
-    if host: r.rt_flags |= r.RTF_HOST
-    r.rt_flags |= r.RTF_UP
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    rv = ioctl(sock, command, r.pack())
+    pass
 
 
 
@@ -521,7 +424,7 @@ class TunTap (object):
 
   @property
   def eth_addr (self):
-    return Interface(self.name).eth_addr
+    pass
 
 
 class RXData (Event):
@@ -549,7 +452,7 @@ class PCapInterface (Interface, EventMixin):
     core.add_listener(self._handle_GoingDownEvent)
 
   def _handle_GoingDownEvent (self, event):
-    self.close()
+    pass
 
   def send (self, data):
     if self.pcap is None: return
@@ -562,26 +465,10 @@ class PCapInterface (Interface, EventMixin):
     This may not be on the right thread, so we just push it to a thread-safe
     queue and poke the cooperative thread, which will pop it later.
     """
-    do_read = self._q.empty()
-    self._q.put((obj,data))
-    if do_read: core.callLater(self._queue_read)
+    pass
 
   def _queue_read (self):
-    anything = False
-    for _ in range(10): # as most X at once
-      try:
-        data = self._q.get(False)
-        self._q.task_done()
-        anything = True
-      except:
-        break
-
-      pcap,data = data
-      self.raiseEventNoErrors(RXData, self, data)
-
-    if anything:
-      # Check for remainders later
-      core.callLater(self._queue_read)
+    pass
 
   def __del__ (self):
     self.close()
@@ -615,11 +502,11 @@ class TapInterface (Interface, EventMixin):
 
   @property
   def is_tap (self):
-    return self.tap.is_tap
+    pass
 
   @property
   def is_tun (self):
-    return self.tap.is_tun
+    pass
 
   def send (self, data, flags=0, protocol=None):
     if not self.tap.is_raw:
@@ -634,14 +521,7 @@ class TapInterface (Interface, EventMixin):
     self.tap.write(data)
 
   def _do_rx (self):
-    data = self.tap.read(self.max_read_size)
-    if not self.tap.is_raw:
-      flags,proto = struct.unpack("!HH", data[:4])
-      #FIXME: This may invert the flags...
-      self.last_flags = flags
-      self.last_protocol = proto
-      data = data[4:] # Cut off header
-    self.raiseEvent(RXData, self, data)
+    pass
 
   def fileno (self):
     # Support fileno so that this can be used in IO loop directly

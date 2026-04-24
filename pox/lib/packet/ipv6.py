@@ -303,22 +303,11 @@ class ipv6 (packet_base):
     """
     The last header type
     """
-    if len(self.extension_headers):
-      if isinstance(self.extension_headers[-1], ExtensionHeader):
-        return self.extension_headers[-1].next_header_type
-    else:
-      return self.next_header_type
-    return None
+    pass
 
   @payload_type.setter
   def payload_type (self, value):
-    if len(self.extension_headers):
-      if isinstance(self.extension_headers[-1], ExtensionHeader):
-        self.extension_headers[-1].next_header_type = value
-      else:
-        raise RuntimeError("Can't set payload_type")
-    else:
-      self.next_header_type = value
+    pass
 
   def parse (self, raw, offset=0):
     assert isinstance(raw, bytes)
@@ -387,11 +376,7 @@ class ipv6 (packet_base):
       self.next = raw[offset:offset+length]
 
   def add_header (self, eh):
-    if self.extension_headers:
-      assert isinstance(self.extension_headers[-1], ExtensionHeader)
-      self.extension_headers[-1].next_header_type = eh.TYPE
-    else:
-      self._next_header_type = eh.TYPE
+    pass
 
   def hdr (self, payload):
     vtcfl = self.v << 28
@@ -423,11 +408,7 @@ class ipv6 (packet_base):
     return r
 
   def _to_str (self):
-    ehs = [ipproto_to_str(self.next_header_type)]
-    for eh in self.extension_headers:
-      ehs.append(ipproto_to_str(eh.next_header_type))
-    s = "IPv6 %s>%s" % (self.srcip, self.dstip)
-    return "[" + s + " " + "+".join(ehs) + "]"
+    pass
 
   #def __str__ (self):
   #  s = "[IP%s+%s %s>%s (hl:%s)]" % (

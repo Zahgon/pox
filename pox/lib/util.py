@@ -113,9 +113,7 @@ class DirtyList (list):
     list.remove(self, v)
 
   def reverse (self):
-    if len(self):
-      self._smudge('reverse', None, None)
-    list.reverse(self)
+    pass
 
   def sort (self, *arg, **kw):
     #TODO: check for changes?
@@ -201,10 +199,7 @@ def set_extend (l, index, item, emptyValue = None):
   of the list, it will pad the list out until it's large enough, using
   emptyValue for the new entries.
   """
-  #TODO: Better name?  The 'set' is a bit misleading.
-  if index >= len(l):
-    l += ([emptyValue] * (index - len(self) + 1))
-  l[index] = item
+  pass
 
 
 def str_to_dpid (s):
@@ -324,7 +319,7 @@ def make_pinger ():
       os.read(self._r, 1024)
 
     def pong (self):
-      os.read(self._r, 1)
+      pass
 
     def __del__ (self):
       try:
@@ -349,7 +344,7 @@ def make_pinger ():
     #       that the recv() calls for pong will not complete.  We should
     #       deal with this.
     def pong (self):
-      self._r.recv(1)
+      pass
     def pongAll (self): # Deprecated
       return self.pong_all()
     def pong_all (self):
@@ -513,27 +508,7 @@ def connect_socket_with_backoff (address, port, max_backoff_seconds=32):
 
   Note: blocks while connecting.
   """
-  #TODO: Remove?  The backoff IOWorker seems like a better way to do this
-  #      in general.
-  backoff_seconds = 1
-  sock = None
-  print("connect_socket_with_backoff(address=%s, port=%d)"
-        % (address, port), file=sys.stderr)
-  while True:
-    try:
-      sock = socket.socket()
-      sock.connect( (address, port) )
-      break
-    except socket.error as e:
-      print("%s. Backing off %d seconds ..." % (str(e), backoff_seconds),
-            file=sys.stderr)
-      if backoff_seconds >= max_backoff_seconds:
-        raise RuntimeError("Could not connect to controller %s:%d"
-                           % (address, port))
-      else:
-        time.sleep(backoff_seconds)
-      backoff_seconds <<= 1
-  return sock
+  pass
 
 
 _scalar_types = (int, str, float, bool)
@@ -587,14 +562,7 @@ def del_values_where (d, f):
 
   This is optimized for cases with few or no removals.
   """
-  dead = None
-  for k,v in container.items():
-    if f(v):
-      if not dead: dead = [k]
-      else: dead.append(k)
-  if dead:
-    for k in dead:
-      del d[k]
+  pass
 
 
 def aslist (l):
@@ -614,13 +582,12 @@ def eval_args (f):
   The intention is for launch function/commandline arguments (normally all
   strings) to easily receive other types.
   """
-  f._pox_eval_args = True
-  return f
+  pass
 
 
 if __name__ == "__main__":
   #TODO: move to tests?
-  def cb (t,k,v): print(v)
+  pass
   l = DirtyList([10,20,30,40,50])
   l.callback = cb
 

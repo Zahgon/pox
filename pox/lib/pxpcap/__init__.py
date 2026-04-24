@@ -128,86 +128,7 @@ class PCapSelectLoop (object):
     if ping: self._ping()
 
   def _thread_func (self):
-    def quit_pcap (pcap):
-      pcap._notify_quit()
-      del _filenos[pcap.fileno()]
-
-    import select
-    _filenos = self._filenos
-
-    reread = True
-
-    while not self._quitting:
-      if reread:
-        reread = False
-        with self._lock:
-          must_remove = []
-          for pcap in self._pend_add:
-            try:
-              _filenos[pcap.fileno()] = pcap
-            except:
-              must_remove.append(pcap)
-          for pcap in self._pend_remove:
-            try:
-              quit_pcap(pcap)
-            except:
-              must_remove.append(pcap)
-          del self._pend_remove[:]
-          del self._pend_add[:]
-          if must_remove:
-            backwards = dict([(v,k) for k,v in _filenos.items()])
-            for pcap in must_remove:
-              if pcap not in backwards: continue
-              del _filenos[backwards[pcap]]
-        fds = list(_filenos.keys())
-        fds.append(self._pinger)
-
-      if len(fds) <= 1:
-        # Everyone quit
-        break
-
-      rr,ww,xx = select.select(fds, [], fds, self._idle_timeout)
-      if self._quitting: break
-      if rr:
-        for r in rr:
-          pcap = _filenos.get(r)
-          if pcap:
-            if pcap._quitting:
-              quit_pcap(pcap)
-              reread = True
-            else:
-              r = pcap.next_packet(allow_threads = False)
-              if r[-1] == 0: continue
-              if r[-1] == 1:
-                pcap.callback(pcap, r[0], r[1], r[2], r[3])
-              else:
-                quit_pcap(pcap)
-                reread = True
-          else:
-            if isinstance(r, pox.lib.util.Pinger):
-              r.pong_all()
-              reread = True
-      elif not xx:
-        # Nothing!
-        quit = []
-        for pcap in _filenos.values():
-          if pcap._quitting: quit.append(pcap)
-        if quit:
-          reread = True
-          for pcap in quit:
-            quit_pcap(pcap)
-      if xx:
-        for x in xx:
-          pcap = _filenos.get(x)
-          if pcap:
-            quit_pcap(pcap)
-            reread = True
-          else:
-            reread = True
-
-    with self._lock:
-      self._quitting = False
-      self._thread = None
+    pass
 
 
 pcap_select_loop = PCapSelectLoop() # It's basically a singleton
@@ -311,43 +232,24 @@ class PCap (object):
 
   def open (self, device, promiscuous = None, period = None,
             incoming = True, outgoing = False):
-    assert self.device is None
-    self.addresses = self.get_devices()[device]['addrs']
-    if 'AF_INET' in self.addresses:
-      self.netmask = self.addresses['AF_INET'].get('netmask')
-      if self.netmask is None: self.netmask = IPAddr("0.0.0.0")
-    #print "NM:",self.netmask
-    #print self.addresses['AF_LINK']['addr']
-    self.device = device
-    if period is not None:
-      self.period = period
-    if promiscuous is not None:
-      self.promiscuous = promiscuous
-    self.pcap = pcapc.open_live(device, 65535,
-                                1 if self.promiscuous else 0, self.period)
-    pcapc.setdirection(self.pcap, incoming, outgoing)
-    self.packets_received = 0
-    self.packets_dropped = 0
-    if self.deferred_filter is not None:
-      self.set_filter(*self.deferred_filter)
-      self.deferred_filter = None
+    pass
 
   def set_direction (self, incoming, outgoing):
     pcapc.setdirection(self._pcap, incoming, outgoing)
 
   def set_nonblocking (self, nonblocking = True):
-    pcapc.setnonblock(self._pcap, 1 if nonblocking else 0)
+    pass
 
   def set_blocking (self, blocking = True):
-    self.set_nonblocking(nonblocking = not blocking)
+    pass
 
   @property
   def blocking (self):
-    return False if pcapc.getnonblock(self._pcap) else True
+    pass
 
   @blocking.setter
   def blocking (self, value):
-    self.set_blocking(value)
+    pass
 
   def next_packet (self, allow_threads = True):
     """
@@ -357,18 +259,13 @@ class PCap (object):
       data, timestamp_seconds, timestamp_useconds, total length, and
       the pcap_next_ex return value -- 1 is success
     """
-    return pcapc.next_ex(self._pcap, bool(self.use_bytearray), allow_threads)
+    pass
 
   def _thread_func (self):
-    while not self._quitting:
-      pcapc.dispatch(self.pcap,100,self.callback,self,bool(self.use_bytearray),True)
-      self.packets_received,self.packets_dropped = pcapc.stats(self.pcap)
-
-    self._quitting = False
-    self._thread = None
+    pass
 
   def _handle_GoingDownEvent (self, event):
-    self.close()
+    pass
 
   def start (self):
     assert self._thread is None
@@ -407,8 +304,7 @@ class PCap (object):
       self._thread = None
 
   def _notify_quit (self):
-    if self._stop_semaphore:
-      self._stop_semaphore.release()
+    pass
 
   def close (self):
     if self.pcap is None: return
@@ -421,9 +317,7 @@ class PCap (object):
 
   @property
   def _pcap (self):
-    if self.pcap is None:
-      raise RuntimeError("PCap object not open")
-    return self.pcap
+    pass
 
   def inject (self, data):
     if isinstance(data, pkt.ethernet):
@@ -433,19 +327,7 @@ class PCap (object):
     return pcapc.inject(self.pcap, data)
 
   def set_filter (self, filter, optimize = True):
-    if self.pcap is None:
-      self.deferred_filter = (filter, optimize)
-      return
-
-    if isinstance(filter, str):
-      filter = Filter(filter, optimize, self.netmask.toSignedN(),
-                      pcap_obj=self)
-    elif isinstance(filter, Filter):
-      pass
-    else:
-      raise RuntimeError("Filter must be string or Filter object")
-
-    pcapc.setfilter(self.pcap, filter._pprogram)
+    pass
 
   def fileno (self):
     if self.pcap is None:
@@ -495,7 +377,7 @@ except:
   pass
 
 def get_link_type_name (dlt):
-  return _link_type_names.get(dlt, "<Unknown " + str(dlt) + ">")
+  pass
 
 
 def test (interface = "en1"):
@@ -507,25 +389,7 @@ def test (interface = "en1"):
   bytes_real = 0
   bytes_diff = 0
   def cb (obj, data, sec, usec, length):
-    global drop,total,bytes_got,bytes_real,bytes_diff
-    #print ">>>",data
-    t,d = pcapc.stats(obj.pcap)
-    bytes_got += len(data)
-    bytes_real += length
-    nbd = bytes_real - bytes_got
-    if nbd != bytes_diff:
-      bytes_diff = nbd
-      print("lost bytes:",nbd)
-    if t > total:
-      total = t + 500
-      print(t,"total")
-    if d > drop:
-      drop = d
-      print(d, "dropped")
-    p = pkt.ethernet(data)
-    ip = p.find('ipv4')
-    if ip:
-      print(ip.srcip,"\t",ip.dstip, p)
+    pass
 
   print("\n".join(["%i. %s" % x for x in
                   enumerate(PCap.get_device_names())]))
@@ -560,7 +424,7 @@ def test (interface = "en1"):
     p.inject(e)
 
   def broadcast ():
-    ping('ff:ff:ff:ff:ff:ff','255.255.255.255')
+    pass
 
   import code
   code.interact(local=locals())
@@ -570,44 +434,25 @@ def no_select ():
   """
   Sets default PCap behavior to not try to use select()
   """
-  PCap.use_select = False
+  pass
 
 
 def do_select ():
   """
   Sets default PCap behavior to try to use select()
   """
-  PCap.use_select = True
+  pass
 
 
 def interfaces (verbose = False):
   """
   Show interfaces
   """
-  if not verbose:
-    print("\n".join(["%i. %s" % x for x in
-                    enumerate(PCap.get_device_names())]))
-  else:
-    import pprint
-    print(pprint.pprint(PCap.get_devices()))
-
-  from pox.core import core
-  core.quit()
+  pass
 
 
 def launch (interface, no_incoming=False, no_outgoing=False):
   """
   pxshark -- prints packets
   """
-  def cb (obj, data, sec, usec, length):
-    p = pkt.ethernet(data)
-    print(p.dump())
-
-  if interface.startswith("#"):
-    interface = int(interface[1:])
-    interface = PCap.get_device_names()[interface]
-
-  p = PCap(interface, callback = cb, start=False)
-  p.set_direction(not no_incoming, not no_outgoing)
-  #p.use_select = False
-  p.start()
+  pass

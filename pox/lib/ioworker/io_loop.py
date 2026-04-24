@@ -54,7 +54,7 @@ class ReadLoop (object):
   singleton = _singleton_property()
 
   def _handle_GoingDownEvent (self, event):
-    self.running = False
+    pass
 
   def add (self, client):
     #TODO: Should these be weak refs?
@@ -72,8 +72,5 @@ class ReadLoop (object):
 
   def _task_proc (self):
     #log.info("%s task starting", type(self).__name__)
-    while core.running and self.running:
-      rr,ww,xx = yield Select(self._clients, [], [], self.IO_TIMEOUT)
-      for client in rr:
-        client._do_rx()
+    pass
     #log.info("%s task quit", type(self).__name__)

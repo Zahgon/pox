@@ -76,7 +76,7 @@ def xid_generator (start = 1, stop = MAX_XID):
   return XIDGenerator(start, stop).__next__
 
 def user_xid_generator ():
-  return xid_generator(0x80000000, 0xffFFffFF)
+  pass
 
 generate_xid = xid_generator()
 
@@ -116,9 +116,7 @@ def _skip (data, offset, num):
   return offset
 
 def _unpad (data, offset, num):
-  (offset, o) = _read(data, offset, num)
-  assert len(o.replace(b"\x00", b"")) == 0
-  return offset
+  pass
 
 def _readzs (data, offset, length):
   (offset, d) = _read(data, offset, length)
@@ -144,11 +142,7 @@ def _packzs (data, length):
 
 
 def _format_body (body, prefix):
-  if hasattr(body, 'show'):
-    #TODO: Check this (spacing may well be wrong)
-    return body.show(prefix + '  ')
-  else:
-    return prefix + hexdump(body).replace("\n", "\n" + prefix)
+  pass
 
 TABLE_ALL = 0xff
 TABLE_EMERGENCY = 0xfe
@@ -558,13 +552,11 @@ class ofp_header (ofp_base):
 
   @property
   def xid (self):
-    if self._xid is None:
-      self._xid = generate_xid()
-    return self._xid
+    pass
 
   @xid.setter
   def xid (self, val):
-    self._xid = val
+    pass
 
   def _validate (self):
     if self.header_type not in ofp_type_map:
@@ -597,16 +589,7 @@ class ofp_header (ofp_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'version: ' + str(self.version) + '\n'
-    outstr += prefix + 'type:    ' + str(self.header_type)# + '\n'
-    outstr += " (" + ofp_type_map.get(self.header_type, "Unknown") + ")\n"
-    try:
-      outstr += prefix + 'length:  ' + str(len(self)) + '\n'
-    except:
-      pass
-    outstr += prefix + 'xid:     ' + str(self.xid) + '\n'
-    return outstr
+    pass
 
   def __str__ (self):
     return self.__class__.__name__ + "\n  " + self.show('  ').strip()
@@ -695,13 +678,13 @@ class ofp_phy_port (ofp_base, ClassicCmp):
     """
     Turn on selected config bits
     """
-    return self.set_config(0xffFFffFF, mask)
+    pass
 
   def disable_config (self, mask):
     """
     Turn off selected config bits
     """
-    return self.set_config(0, mask)
+    pass
 
   def set_config (self, config, mask):
     """
@@ -709,10 +692,7 @@ class ofp_phy_port (ofp_base, ClassicCmp):
 
     Returns which bits were changed
     """
-    old = self.config
-    self.config &= ~mask
-    self.config |= config
-    return old ^ self.config
+    pass
 
   def __str__ (self):
     return "%s:%i" % (self.name, self.port_no)
@@ -766,11 +746,7 @@ class ofp_phy_port (ofp_base, ClassicCmp):
     return True
 
   def _classic__cmp__ (self, other):
-    if type(other) != type(self): return id(self)-id(other)
-    if self.port_no < other.port_no: return -1
-    if self.port_no > other.port_no: return 1
-    if self == other: return 0
-    return id(self)-id(other)
+    pass
 
   def __hash__(self, *args, **kwargs):
     return hash(self.port_no) ^ hash(self.hw_addr) ^ \
@@ -780,17 +756,7 @@ class ofp_phy_port (ofp_base, ClassicCmp):
            hash(self.peer)
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'port_no: ' + str(self.port_no) + '\n'
-    outstr += prefix + 'hw_addr: ' + str(EthAddr(self.hw_addr)) + '\n'
-    outstr += prefix + 'name: ' + str(self.name) + '\n'
-    outstr += prefix + 'config: ' + str(self.config) + '\n'
-    outstr += prefix + 'state: ' + str(self.state) + '\n'
-    outstr += prefix + 'curr: ' + str(self.curr) + '\n'
-    outstr += prefix + 'advertised: ' + str(self.advertised) + '\n'
-    outstr += prefix + 'supported: ' + str(self.supported) + '\n'
-    outstr += prefix + 'peer: ' + str(self.peer) + '\n'
-    return outstr
+    pass
 
   def __repr__(self):
     return self.show()
@@ -840,13 +806,7 @@ class ofp_packet_queue (ofp_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'queue_id: ' + str(self.queue_id) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'properties: \n'
-    for obj in self.properties:
-      outstr += obj.show(prefix + '  ')
-    return outstr
+    pass
 
 
 class ofp_queue_prop_generic (ofp_queue_prop_base):
@@ -884,10 +844,7 @@ class ofp_queue_prop_generic (ofp_queue_prop_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'property: ' + str(self.property) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    return outstr
+    pass
 
 
 @openflow_queue_prop('OFPQT_NONE', 0)
@@ -932,11 +889,7 @@ class ofp_queue_prop_min_rate (ofp_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'property: ' + str(self.property) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'rate: ' + str(self.rate) + '\n'
-    return outstr
+    pass
 
 
 ##2.3 Flow Match Structures
@@ -954,63 +907,7 @@ class ofp_match (ofp_base):
     @param packet  A pox.packet.ethernet instance or a packet_in
     @param spec_frags Handle IP fragments as specified in the spec.
     """
-    if isinstance(packet, ofp_packet_in):
-      in_port = packet.in_port
-      packet = ethernet(packet.data)
-    assert assert_type("packet", packet, ethernet, none_ok=False)
-
-    match = cls()
-
-    if in_port is not None:
-      match.in_port = in_port
-
-    match.dl_src = packet.src
-    match.dl_dst = packet.dst
-    match.dl_type = packet.type
-    p = packet.next
-
-    # Is this in the spec?
-    if packet.type < 1536:
-      match.dl_type = OFP_DL_TYPE_NOT_ETH_TYPE
-    # LLC then VLAN?  VLAN then LLC?
-    if isinstance(p, llc):
-      if p.has_snap and p.oui == '\0\0\0':
-        match.dl_type = p.eth_type
-        p = p.next
-    if isinstance(p, vlan):
-      match.dl_type = p.eth_type
-      match.dl_vlan = p.id
-      match.dl_vlan_pcp = p.pcp
-      p = p.next
-    else:
-      match.dl_vlan = OFP_VLAN_NONE
-      match.dl_vlan_pcp = 0
-
-    if isinstance(p, ipv4):
-      match.nw_src = p.srcip
-      match.nw_dst = p.dstip
-      match.nw_proto = p.protocol
-      match.nw_tos = p.tos
-      if spec_frags and ((p.flags & p.MF_FLAG) or p.frag != 0):
-        # This seems a bit strange, but see page 9 of the spec.
-        match.tp_src = 0
-        match.tp_dst = 0
-        return match
-      p = p.next
-
-      if isinstance(p, udp) or isinstance(p, tcp):
-        match.tp_src = p.srcport
-        match.tp_dst = p.dstport
-      elif isinstance(p, icmp):
-        match.tp_src = p.type
-        match.tp_dst = p.code
-    elif isinstance(p, arp):
-      if p.opcode <= 255:
-        match.nw_proto = p.opcode
-        match.nw_src = p.protosrc
-        match.nw_dst = p.protodst
-
-    return match
+    pass
 
   def clone (self):
     n = ofp_match()
@@ -1053,68 +950,19 @@ class ofp_match (ofp_base):
       setattr(self, k, v)
 
   def get_nw_dst (self):
-    if (self.wildcards & OFPFW_NW_DST_ALL) == OFPFW_NW_DST_ALL:
-      return (None, 0)
-
-    w = (self.wildcards & OFPFW_NW_DST_MASK) >> OFPFW_NW_DST_SHIFT
-    return (self._nw_dst,32-w if w <= 32 else 0)
+    pass
 
   def get_nw_src (self):
-    if (self.wildcards & OFPFW_NW_SRC_ALL) == OFPFW_NW_SRC_ALL:
-      return (None, 0)
-
-    w = (self.wildcards & OFPFW_NW_SRC_MASK) >> OFPFW_NW_SRC_SHIFT
-    return (self._nw_src,32-w if w <= 32 else 0)
+    pass
 
   def set_nw_dst (self, *args, **kw):
-    a = self._make_addr(*args, **kw)
-    if a is None:
-      self._nw_dst = ofp_match_data['nw_dst'][0]
-      self.wildcards &= ~OFPFW_NW_DST_MASK
-      self.wildcards |= ofp_match_data['nw_dst'][1]
-      return
-    self._nw_dst = a[0]
-    self.wildcards &= ~OFPFW_NW_DST_MASK
-    self.wildcards |= ((32-a[1]) << OFPFW_NW_DST_SHIFT)
+    pass
 
   def set_nw_src (self, *args, **kw):
-    a = self._make_addr(*args, **kw)
-    if a is None:
-      self._nw_src = ofp_match_data['nw_src'][0]
-      self.wildcards &= ~OFPFW_NW_SRC_MASK
-      self.wildcards |= ofp_match_data['nw_src'][1]
-      return
-    self._nw_src = a[0]
-    self.wildcards &= ~OFPFW_NW_SRC_MASK
-    self.wildcards |= ((32-a[1]) << OFPFW_NW_SRC_SHIFT)
+    pass
 
   def _make_addr (self, ipOrIPAndBits, bits=None):
-    if ipOrIPAndBits is None: return None
-    b = None
-    if type(ipOrIPAndBits) is tuple:
-      ip = ipOrIPAndBits[0]
-      b = ipOrIPAndBits[1]
-      b = 32 if b is None else int(b)
-    elif (type(ipOrIPAndBits) is str) and (len(ipOrIPAndBits) != 4):
-      if ipOrIPAndBits.find('/') != -1:
-        s = parse_cidr(ipOrIPAndBits, infer=False)
-        ip = s[0]
-        b = int(s[1]) if b is None else b
-      else:
-        ip = ipOrIPAndBits
-        b = 32 if b is None else b
-    else:
-      ip = ipOrIPAndBits
-      b = 32 if b is None else b
-
-    if type(ip) is str:
-      ip = IPAddr(ip)
-
-    if bits != None: b = bits
-    if b > 32: b = 32
-    elif b < 0: b = 0
-
-    return (ip, b)
+    pass
 
   def __setattr__ (self, name, value):
     if name == '_locked':
@@ -1343,11 +1191,11 @@ class ofp_match (ofp_base):
 
   @property
   def is_wildcarded (self):
-    return self.wildcards & OFPFW_ALL != 0
+    pass
 
   @property
   def is_exact (self):
-    return not self.is_wildcarded
+    pass
 
   def unpack (self, raw, offset=0, flow_mod=False):
     _offset = offset
@@ -1382,18 +1230,7 @@ class ofp_match (ofp_base):
     This generates a hash code which might be useful, but without locking
     the match object.
     """
-
-    h = self.wildcards
-    for f in ofp_match_data:
-      v = getattr(self, f)
-      if type(v) is int:
-        h ^= v
-      elif type(v) is int:
-        h ^= v
-      else:
-        h ^= hash(v)
-
-    return int(h & 0x7fFFffFF)
+    pass
 
   def __hash__ (self):
     self._locked = True
@@ -1408,54 +1245,7 @@ class ofp_match (ofp_base):
 
     Important for non-strict modify flow_mods etc.
     """
-    assert assert_type("other", other, ofp_match, none_ok=False)
-
-    # shortcut for equal matches
-    if self == other: return True
-
-    if consider_other_wildcards:
-      # Check that other doesn't have more wildcards than we do -- it
-      # must be narrower (or equal) to us.
-      self_bits  = self.wildcards&~(OFPFW_NW_SRC_MASK|OFPFW_NW_DST_MASK)
-      other_bits = other.wildcards&~(OFPFW_NW_SRC_MASK|OFPFW_NW_DST_MASK)
-      if (self_bits | other_bits) != self_bits: return False
-
-    def match_fail (mine, others):
-      if mine is None: return False # Wildcarded
-      return mine != others
-
-    if match_fail(self.in_port, other.in_port): return False
-    if match_fail(self.dl_vlan, other.dl_vlan): return False
-    if match_fail(self.dl_src, other.dl_src): return False
-    if match_fail(self.dl_dst, other.dl_dst): return False
-    if match_fail(self.dl_type, other.dl_type): return False
-    if match_fail(self.nw_proto, other.nw_proto): return False
-    if match_fail(self.tp_src, other.tp_src): return False
-    if match_fail(self.tp_dst, other.tp_dst): return False
-    if match_fail(self.dl_vlan_pcp, other.dl_vlan_pcp): return False
-    if match_fail(self.nw_tos, other.nw_tos): return False
-
-    #FIXME: The two ??? checks below look like they compare other
-    #       wildcards always -- even when consider_other_wildcards=False.
-    #       Is this intentional?  (I think it might be subtly wrong and
-    #       we actually may need to mask off some bits and do the
-    #       inNetwork check or something...)
-
-    self_nw_src = self.get_nw_src()
-    if self_nw_src[0] is not None:
-      other_nw_src = other.get_nw_src()
-      if self_nw_src[1] > other_nw_src[1]: return False #???
-      if not IPAddr(other_nw_src[0]).inNetwork(
-            (self_nw_src[0], self_nw_src[1])): return False
-
-    self_nw_dst = self.get_nw_dst()
-    if self_nw_dst[0] is not None:
-      other_nw_dst = other.get_nw_dst()
-      if self_nw_dst[1] > other_nw_dst[1]: return False #???
-      if not IPAddr(other_nw_dst[0]).inNetwork(
-            (self_nw_dst[0], self_nw_dst[1])): return False
-
-    return True
+    pass
 
   def __eq__ (self, other):
     if type(self) != type(other): return False
@@ -1478,55 +1268,7 @@ class ofp_match (ofp_base):
     return self.__class__.__name__ + "\n  " + self.show('  ').strip()
 
   def show (self, prefix='', wildcards=False):
-    def binstr (n):
-      s = ''
-      while True:
-        s = ('1' if n & 1 else '0') + s
-        n >>= 1
-        if n == 0: break
-      return s
-    def safehex(n):
-      if n is None:
-        return "(None)"
-      else:
-        return hex(n)
-
-    def show_wildcards(w):
-      parts = [ k.lower()[len("OFPFW_"):]
-                for (k,v) in ofp_flow_wildcards_rev_map.items()
-                if v & w == v ]
-      nw_src_bits = (w & OFPFW_NW_SRC_MASK) >> OFPFW_NW_SRC_SHIFT
-      if nw_src_bits > 0:
-        parts.append("nw_src(/%d)" % (32 - nw_src_bits))
-
-      nw_dst_bits = (w & OFPFW_NW_DST_MASK) >> OFPFW_NW_DST_SHIFT
-      if nw_dst_bits > 0:
-        parts.append("nw_dst(/%d)" % (32 - nw_dst_bits))
-
-      return "|".join(parts)
-
-    outstr = ''
-    if wildcards:
-      outstr += prefix + 'wildcards: '
-      outstr += show_wildcards(self.wildcards)
-      outstr += ' (%s = %x)\n' % (binstr(self.wildcards), self.wildcards)
-    def append (f, formatter=str):
-      v = self.__getattr__(f)
-      if v is None: return ''
-      return prefix + f + ": " + formatter(v) + "\n"
-    outstr += append('in_port')
-    outstr += append('dl_src')
-    outstr += append('dl_dst')
-    outstr += append('dl_vlan')
-    outstr += append('dl_vlan_pcp')
-    outstr += append('dl_type', safehex)
-    outstr += append('nw_tos')
-    outstr += append('nw_proto')
-    outstr += append('nw_src')
-    outstr += append('nw_dst')
-    outstr += append('tp_src')
-    outstr += append('tp_dst')
-    return outstr
+    pass
 
 
 class ofp_action_generic (ofp_action_base):
@@ -1562,10 +1304,7 @@ class ofp_action_generic (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_OUTPUT', 0)
@@ -1607,12 +1346,7 @@ class ofp_action_output (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'port: ' + str(self.port) + '\n'
-    outstr += prefix + 'max_len: ' + str(self.max_len) + '\n'
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_ENQUEUE', 11)
@@ -1653,12 +1387,7 @@ class ofp_action_enqueue (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'port: ' + str(self.port) + '\n'
-    outstr += prefix + 'queue_id: ' + str(self.queue_id) + '\n'
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_STRIP_VLAN', 3)
@@ -1688,10 +1417,7 @@ class ofp_action_strip_vlan (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_SET_VLAN_VID', 1)
@@ -1730,11 +1456,7 @@ class ofp_action_vlan_vid (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'vlan_vid: ' + str(self.vlan_vid) + '\n'
-    return outstr
+    pass
 ofp_action_set_vlan_vid = ofp_action_vlan_vid
 
 
@@ -1773,11 +1495,7 @@ class ofp_action_vlan_pcp (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'vlan_pcp: ' + str(self.vlan_pcp) + '\n'
-    return outstr
+    pass
 ofp_action_set_vlan_pcp = ofp_action_vlan_pcp
 
 
@@ -1841,11 +1559,7 @@ class ofp_action_dl_addr (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'dl_addr: ' + str(self.dl_addr) + '\n'
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_SET_NW_DST', 7)
@@ -1896,11 +1610,7 @@ class ofp_action_nw_addr (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'nw_addr: ' + str(self.nw_addr) + '\n'
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_SET_NW_TOS', 8)
@@ -1935,11 +1645,7 @@ class ofp_action_nw_tos (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'nw_tos: ' + str(self.nw_tos) + '\n'
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_SET_TP_DST', 10)
@@ -1987,11 +1693,7 @@ class ofp_action_tp_port (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'tp_port: ' + str(self.tp_port) + '\n'
-    return outstr
+    pass
 
 
 class ofp_action_vendor_base (ofp_action_base):
@@ -2006,7 +1708,7 @@ class ofp_action_vendor_base (ofp_action_base):
 
     Overide this.
     """
-    return True
+    pass
 
   def _init (self, kw):
     """
@@ -2037,13 +1739,13 @@ class ofp_action_vendor_base (ofp_action_base):
     This should include everything after the length field.
     Optionally override this.
     """
-    return len(self._pack_body())
+    pass
 
   def _show (self, prefix):
     """
     Format additional fields as text
     """
-    return ""
+    pass
 
   def __init__ (self, **kw):
     self._init(kw)
@@ -2086,12 +1788,7 @@ class ofp_action_vendor_base (ofp_action_base):
     return self._eq(other)
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'vendor: ' + str(self.vendor) + '\n'
-    outstr += self._show(prefix)
-    return outstr
+    pass
 
 
 @openflow_action('OFPAT_VENDOR', 65535)
@@ -2136,11 +1833,7 @@ class ofp_action_vendor_generic (ofp_action_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'len: ' + str(len(self)) + '\n'
-    outstr += prefix + 'vendor: ' + str(self.vendor) + '\n'
-    return outstr
+    pass
 
 
 #3. Controller-to-Switch Messages
@@ -2204,18 +1897,7 @@ class ofp_features_reply (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'datapath_id: ' + str(self.datapath_id) + '\n'
-    outstr += prefix + 'n_buffers: ' + str(self.n_buffers) + '\n'
-    outstr += prefix + 'n_tables: ' + str(self.n_tables) + '\n'
-    outstr += prefix + 'capabilities: ' + str(self.capabilities) + '\n'
-    outstr += prefix + 'actions: ' + str(self.actions) + '\n'
-    outstr += prefix + 'ports: \n'
-    for obj in self.ports:
-      outstr += obj.show(prefix + '  ')
-    return outstr
+    pass
 ofp_switch_features = ofp_features_reply
 
 
@@ -2255,12 +1937,7 @@ class ofp_set_config (ofp_header): # uses ofp_switch_config
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'flags: ' + str(self.flags) + '\n'
-    outstr += prefix + 'miss_send_len: ' + str(self.miss_send_len) + '\n'
-    return outstr
+    pass
 
 
 ##3.3 Modify State Messages
@@ -2299,12 +1976,10 @@ class ofp_flow_mod (ofp_header):
 
   @property
   def buffer_id (self):
-    if self._buffer_id == NO_BUFFER: return None
-    return self._buffer_id
+    pass
   @buffer_id.setter
   def buffer_id (self, val):
-    if val is None: val = NO_BUFFER
-    self._buffer_id = val
+    pass
 
   def _validate (self):
     if not isinstance(self.match, ofp_match):
@@ -2388,23 +2063,7 @@ class ofp_flow_mod (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'match: \n'
-    outstr += self.match.show(prefix + '  ') + '\n'
-    outstr += prefix + 'cookie: ' + str(self.cookie) + '\n'
-    outstr += prefix + 'command: ' + str(self.command) + '\n'
-    outstr += prefix + 'idle_timeout: ' + str(self.idle_timeout) + '\n'
-    outstr += prefix + 'hard_timeout: ' + str(self.hard_timeout) + '\n'
-    outstr += prefix + 'priority: ' + str(self.priority) + '\n'
-    outstr += prefix + 'buffer_id: ' + str(self.buffer_id) + '\n'
-    outstr += prefix + 'out_port: ' + str(self.out_port) + '\n'
-    outstr += prefix + 'flags: ' + str(self.flags) + '\n'
-    outstr += prefix + 'actions: \n'
-    for obj in self.actions:
-      outstr += obj.show(prefix + '  ')
-    return outstr
+    pass
 
 
 @openflow_c_message("OFPT_PORT_MOD", 15)
@@ -2466,15 +2125,7 @@ class ofp_port_mod (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'port_no: ' + str(self.port_no) + '\n'
-    outstr += prefix + 'hw_addr: ' + str(EthAddr(self.hw_addr)) + '\n'
-    outstr += prefix + 'config: ' + str(self.config) + '\n'
-    outstr += prefix + 'mask: ' + str(self.mask) + '\n'
-    outstr += prefix + 'advertise: ' + str(self.advertise) + '\n'
-    return outstr
+    pass
 
 
 ##3.4 Queue Configuration Messages
@@ -2512,11 +2163,7 @@ class ofp_queue_get_config_request (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'port: ' + str(self.port) + '\n'
-    return outstr
+    pass
 
 
 @openflow_s_message("OFPT_QUEUE_GET_CONFIG_REPLY", 21)
@@ -2575,14 +2222,7 @@ class ofp_queue_get_config_reply (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'port: ' + str(self.port) + '\n'
-    outstr += prefix + 'queues: \n'
-    for obj in self.queues:
-      outstr += obj.show(prefix + '  ')
-    return outstr
+    pass
 
 
 @openflow_c_message("OFPT_STATS_REQUEST", 16)
@@ -2623,11 +2263,10 @@ class ofp_stats_request (ofp_header):
 
   @property
   def body (self):
-    return self._body
+    pass
   @body.setter
   def body (self, data):
-    self._body = data
-    self._body_packed_cache = None
+    pass
 
   def unpack (self, raw, offset=0):
     offset,length = self._unpack_header(raw, offset)
@@ -2659,14 +2298,7 @@ class ofp_stats_request (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'flags: ' + str(self.flags) + '\n'
-    outstr += prefix + 'body:\n'
-    outstr += _format_body(self.body, prefix + '  ') + '\n'
-    return outstr
+    pass
 
 
 @openflow_s_message("OFPT_STATS_REPLY", 17,
@@ -2684,27 +2316,14 @@ class ofp_stats_reply (ofp_header):
 
   @property
   def is_last_reply (self):
-    return (self.flags & 1) == 0
+    pass
   @is_last_reply.setter
   def is_last_reply (self, value):
-    self.flags = self.flags & 0xfffe
-    if not value:
-      self.flags |= 1
+    pass
 
   @property
   def body_data (self):
-    if self._body_data[0] is not self.body:
-      def _pack(b):
-        return b.pack() if hasattr(b, 'pack') else b
-
-      data = b''
-      if is_listlike(self.body):
-        for b in self.body:
-          data += _pack(b)
-      else:
-        data = _pack(self.body)
-      self._body_data = (self.body, data)
-    return self._body_data[1]
+    pass
 
   def pack (self):
     if self.type is None:
@@ -2773,18 +2392,7 @@ class ofp_stats_reply (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'type: ' + str(self.type) + '\n'
-    outstr += prefix + 'flags: ' + str(self.flags) + '\n'
-    outstr += prefix + 'body:\n'
-    body = self.body
-    if not is_listlike(body):
-      body = [body]
-    for b in body:
-      outstr += _format_body(b, prefix + '  ') + '\n'
-    return outstr
+    pass
 
 
 @openflow_stats_reply("OFPST_DESC", 0)
@@ -2856,13 +2464,7 @@ class ofp_desc_stats (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'mfr_desc: ' + str(self.mfr_desc) + '\n'
-    outstr += prefix + 'hw_desc: ' + str(self.hw_desc) + '\n'
-    outstr += prefix + 'sw_desc: ' + str(self.sw_desc) + '\n'
-    outstr += prefix + 'serial_num: ' + str(self.serial_num) + '\n'
-    outstr += prefix + 'dp_desc: ' + str(self.dp_desc) + '\n'
-    return outstr
+    pass
 
 ofp_desc_stats_reply = ofp_desc_stats
 
@@ -2895,7 +2497,7 @@ class _empty_stats_request_body (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    return "<empty>"
+    pass
 
 @openflow_stats_request('OFPST_DESC', 0)
 class ofp_desc_stats_request (_empty_stats_request_body):
@@ -2954,12 +2556,7 @@ class ofp_flow_stats_request (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'match: \n'
-    outstr += self.match.show(prefix + '  ')
-    outstr += prefix + 'table_id: ' + str(self.table_id) + '\n'
-    outstr += prefix + 'out_port: ' + str(self.out_port) + '\n'
-    return outstr
+    pass
 
 
 @openflow_stats_reply('OFPST_FLOW', is_list = True)
@@ -3041,23 +2638,7 @@ class ofp_flow_stats (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'length: ' + str(len(self)) + '\n'
-    outstr += prefix + 'table_id: ' + str(self.table_id) + '\n'
-    outstr += prefix + 'match: \n'
-    outstr += self.match.show(prefix + '  ')
-    outstr += prefix + 'duration_sec: ' + str(self.duration_sec) + '\n'
-    outstr += prefix + 'duration_nsec: ' + str(self.duration_nsec) + '\n'
-    outstr += prefix + 'priority: ' + str(self.priority) + '\n'
-    outstr += prefix + 'idle_timeout: ' + str(self.idle_timeout) + '\n'
-    outstr += prefix + 'hard_timeout: ' + str(self.hard_timeout) + '\n'
-    outstr += prefix + 'cookie: ' + str(self.cookie) + '\n'
-    outstr += prefix + 'packet_count: ' + str(self.packet_count) + '\n'
-    outstr += prefix + 'byte_count: ' + str(self.byte_count) + '\n'
-    outstr += prefix + 'actions: \n'
-    for obj in self.actions:
-      outstr += obj.show(prefix + '  ')
-    return outstr
+    pass
 ofp_flow_stats_reply = ofp_flow_stats
 
 
@@ -3104,12 +2685,7 @@ class ofp_aggregate_stats_request (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'match: \n'
-    outstr += self.match.show(prefix + '  ')
-    outstr += prefix + 'table_id: ' + str(self.table_id) + '\n'
-    outstr += prefix + 'out_port: ' + str(self.out_port) + '\n'
-    return outstr
+    pass
 
 
 @openflow_stats_reply('OFPST_AGGREGATE')
@@ -3150,11 +2726,7 @@ class ofp_aggregate_stats (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'packet_count: ' + str(self.packet_count) + '\n'
-    outstr += prefix + 'byte_count: ' + str(self.byte_count) + '\n'
-    outstr += prefix + 'flow_count: ' + str(self.flow_count) + '\n'
-    return outstr
+    pass
 ofp_aggregate_stats_reply = ofp_aggregate_stats
 
 
@@ -3217,15 +2789,7 @@ class ofp_table_stats (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'table_id: ' + str(self.table_id) + '\n'
-    outstr += prefix + 'name: ' + str(self.name) + '\n'
-    outstr += prefix + 'wildcards: ' + str(self.wildcards) + '\n'
-    outstr += prefix + 'max_entries: ' + str(self.max_entries) + '\n'
-    outstr += prefix + 'active_count: ' + str(self.active_count) + '\n'
-    outstr += prefix + 'lookup_count: ' + str(self.lookup_count) + '\n'
-    outstr += prefix + 'matched_count: ' + str(self.matched_count) + '\n'
-    return outstr
+    pass
 ofp_table_stats_reply = ofp_table_stats
 
 
@@ -3260,9 +2824,7 @@ class ofp_port_stats_request (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'port_no: ' + str(self.port_no) + '\n'
-    return outstr
+    pass
 
 
 @openflow_stats_reply("OFPST_PORT", is_list = True)
@@ -3352,21 +2914,7 @@ class ofp_port_stats (ofp_stats_body_base):
         collisions = self.collisions + other.collisions)
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'port_no: ' + str(self.port_no) + '\n'
-    outstr += prefix + 'rx_packets: ' + str(self.rx_packets) + '\n'
-    outstr += prefix + 'tx_packets: ' + str(self.tx_packets) + '\n'
-    outstr += prefix + 'rx_bytes: ' + str(self.rx_bytes) + '\n'
-    outstr += prefix + 'tx_bytes: ' + str(self.tx_bytes) + '\n'
-    outstr += prefix + 'rx_dropped: ' + str(self.rx_dropped) + '\n'
-    outstr += prefix + 'tx_dropped: ' + str(self.tx_dropped) + '\n'
-    outstr += prefix + 'rx_errors: ' + str(self.rx_errors) + '\n'
-    outstr += prefix + 'tx_errors: ' + str(self.tx_errors) + '\n'
-    outstr += prefix + 'rx_frame_err: ' + str(self.rx_frame_err) + '\n'
-    outstr += prefix + 'rx_over_err: ' + str(self.rx_over_err) + '\n'
-    outstr += prefix + 'rx_crc_err: ' + str(self.rx_crc_err) + '\n'
-    outstr += prefix + 'collisions: ' + str(self.collisions) + '\n'
-    return outstr
+    pass
 ofp_port_stats_reply = ofp_port_stats
 
 
@@ -3405,10 +2953,7 @@ class ofp_queue_stats_request (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'port_no: ' + str(self.port_no) + '\n'
-    outstr += prefix + 'queue_id: ' + str(self.queue_id) + '\n'
-    return outstr
+    pass
 
 
 @openflow_stats_reply("OFPST_QUEUE", is_list = True)
@@ -3454,13 +2999,7 @@ class ofp_queue_stats (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'port_no: ' + str(self.port_no) + '\n'
-    outstr += prefix + 'queue_id: ' + str(self.queue_id) + '\n'
-    outstr += prefix + 'tx_bytes: ' + str(self.tx_bytes) + '\n'
-    outstr += prefix + 'tx_packets: ' + str(self.tx_packets) + '\n'
-    outstr += prefix + 'tx_errors: ' + str(self.tx_errors) + '\n'
-    return outstr
+    pass
 ofp_queue_stats_reply = ofp_queue_stats
 
 
@@ -3505,10 +3044,7 @@ class ofp_vendor_stats_generic (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'vendor id: ' + str(self.vendor) + '\n'
-    outstr += prefix + 'data len: ' + str(len(self.data)) + '\n'
-    return outstr
+    pass
 
 
 class ofp_generic_stats_body (ofp_stats_body_base):
@@ -3546,9 +3082,7 @@ class ofp_generic_stats_body (ofp_stats_body_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'data len: ' + str(len(self.data)) + '\n'
-    return outstr
+    pass
 
 
 @openflow_c_message("OFPT_PACKET_OUT", 13)
@@ -3575,36 +3109,17 @@ class ofp_packet_out (ofp_header):
 
   @property
   def buffer_id (self):
-    if self._buffer_id == NO_BUFFER: return None
-    return self._buffer_id
+    pass
   @buffer_id.setter
   def buffer_id (self, val):
-    if val is None: val = NO_BUFFER
-    self._buffer_id = val
+    pass
 
   @property
   def data (self):
-    return self._data
+    pass
   @data.setter
   def data (self, data):
-    if data is None:
-      self._data = b''
-    elif isinstance(data, packet_base):
-      self._data = data.pack()
-    elif isinstance(data, ofp_packet_in):
-      # Enable you to easily resend a packet
-      self._data = b''
-      self.buffer_id = data.buffer_id
-      if self.buffer_id is None:
-        #TODO: It'd be nice to log and then ignore if data is incomplete
-        #      Unfortunately, we currently have no logging in here, so we
-        #      assert instead which is a either too drastic or too quiet.
-        assert data.is_complete
-        self._data = data._data
-      self.in_port = data.in_port
-    elif isinstance(data, bytes):
-      self._data = data
-    assert assert_type("data", self._data, (bytes,))
+    pass
 
   def _validate (self):
     if self.buffer_id is not None and self.data != b'':
@@ -3655,19 +3170,7 @@ class ofp_packet_out (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'buffer_id: ' + str(self.buffer_id) + '\n'
-    outstr += prefix + 'in_port: ' + str(self.in_port) + '\n'
-    outstr += prefix + 'actions_len: ' + str(len(self.actions)) + '\n'
-    outstr += prefix + 'actions: \n'
-    for obj in self.actions:
-      if obj is None:
-        raise RuntimeError("An element of self.actions was None! "
-                           + "Bad formatting...")
-      outstr += obj.show(prefix + '  ')
-    return outstr
+    pass
 
 
 ##3.7 Barrier Message
@@ -3700,10 +3203,7 @@ class ofp_barrier_reply (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    return outstr
+    pass
 
 
 @openflow_c_message("OFPT_BARRIER_REQUEST", 18,
@@ -3736,10 +3236,7 @@ class ofp_barrier_request (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    return outstr
+    pass
 
 
 #4 Asynchronous Messages
@@ -3766,35 +3263,25 @@ class ofp_packet_in (ofp_header):
 
   @property
   def total_len (self):
-    if self._total_len is None:
-      return len(self.data) if self.data else 0
-    return self._total_len
+    pass
 
   @total_len.setter
   def total_len (self, value):
-    self._total_len = value
+    pass
 
   @property
   def buffer_id (self):
-    if self._buffer_id == NO_BUFFER: return None
-    return self._buffer_id
+    pass
   @buffer_id.setter
   def buffer_id (self, val):
-    if val is None: val = NO_BUFFER
-    self._buffer_id = val
+    pass
 
   @property
   def data (self):
-    return self._data
+    pass
   @data.setter
   def data (self, data):
-    assert assert_type("data", data, (packet_base, bytes))
-    if data is None:
-      self._data = b''
-    elif isinstance(data, packet_base):
-      self._data = data.pack()
-    else:
-      self._data = data
+    pass
 
   def pack (self):
     assert self._assert()
@@ -3809,8 +3296,7 @@ class ofp_packet_in (ofp_header):
 
   @property
   def is_complete (self):
-    if self.buffer_id is not None: return True
-    return len(self.data) == self.total_len
+    pass
 
   def unpack (self, raw, offset=0):
     offset,length = self._unpack_header(raw, offset)
@@ -3838,15 +3324,7 @@ class ofp_packet_in (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'buffer_id: ' + str(self.buffer_id) + '\n'
-    outstr += prefix + 'total_len: ' + str(self._total_len) + '\n'
-    outstr += prefix + 'in_port: ' + str(self.in_port) + '\n'
-    outstr += prefix + 'reason: ' + str(self.reason) + '\n'
-    outstr += prefix + 'data: ' + str(self.data) + '\n'
-    return outstr
+    pass
 
 
 @openflow_s_message("OFPT_FLOW_REMOVED", 11)
@@ -3916,20 +3394,7 @@ class ofp_flow_removed (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'match: \n'
-    outstr += self.match.show(prefix + '  ')
-    outstr += prefix + 'cookie: ' + str(self.cookie) + '\n'
-    outstr += prefix + 'priority: ' + str(self.priority) + '\n'
-    outstr += prefix + 'reason: ' + str(self.reason) + '\n'
-    outstr += prefix + 'duration_sec: ' + str(self.duration_sec) + '\n'
-    outstr += prefix + 'duration_nsec: ' + str(self.duration_nsec) + '\n'
-    outstr += prefix + 'idle_timeout: ' + str(self.idle_timeout) + '\n'
-    outstr += prefix + 'packet_count: ' + str(self.packet_count) + '\n'
-    outstr += prefix + 'byte_count: ' + str(self.byte_count) + '\n'
-    return outstr
+    pass
 
 
 @openflow_s_message("OFPT_PORT_STATUS", 12)
@@ -3976,13 +3441,7 @@ class ofp_port_status (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'reason: ' + str(self.reason) + '\n'
-    outstr += prefix + 'desc: \n'
-    outstr += self.desc.show(prefix + '  ')
-    return outstr
+    pass
 
 
 @openflow_s_message("OFPT_ERROR", 1)
@@ -4024,24 +3483,7 @@ class ofp_error (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    t = self.type
-    c = self.code
-    if t < len(ofp_error_type):
-      n = ofp_error_type_map[t]
-      t = "%s (%i)" % (n, t)
-      n = 'ofp' + n.lower()[5:] + '_code_map'
-      if n in sys.modules[__name__].__dict__:
-        if c in sys.modules[__name__].__dict__[n]:
-          c = "%s (%i)" % (sys.modules[__name__].__dict__[n][c], c)
-    outstr += prefix + 'type: ' + str(t) + '\n'
-    outstr += prefix + 'code: ' + str(c) + '\n'
-    if len(self.data):
-      outstr += prefix + 'datalen: %s\n' % (len(self.data),)
-      outstr += prefix + hexdump(self.data).replace("\n", "\n" + prefix)
-    return outstr.strip()
+    pass
 
 
 #5. Symmetric Messages
@@ -4072,10 +3514,7 @@ class ofp_hello (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    return outstr
+    pass
 
 
 @openflow_sc_message("OFPT_ECHO_REQUEST", 2,
@@ -4111,12 +3550,7 @@ class ofp_echo_request (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'body:\n'
-    outstr += _format_body(self.body, prefix + '  ') + '\n'
-    return outstr
+    pass
 
 
 @openflow_sc_message("OFPT_ECHO_REPLY", 3,
@@ -4152,12 +3586,7 @@ class ofp_echo_reply (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'body:\n'
-    outstr += _format_body(self.body, prefix + '  ') + '\n'
-    return outstr
+    pass
 
 
 class ofp_vendor_base (ofp_header):
@@ -4211,13 +3640,7 @@ class ofp_vendor_generic (ofp_vendor_base):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'vendor: ' + str(self.vendor) + '\n'
-    outstr += prefix + 'datalen: ' + str(len(self.data)) + '\n'
-    #outstr += prefix + hexdump(self.data).replace("\n", "\n" + prefix)
-    return outstr
+    pass
 
 
 @openflow_c_message("OFPT_FEATURES_REQUEST", 5,
@@ -4250,10 +3673,7 @@ class ofp_features_request (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    return outstr
+    pass
 
 
 @openflow_c_message("OFPT_GET_CONFIG_REQUEST", 7,
@@ -4286,10 +3706,7 @@ class ofp_get_config_request (ofp_header):
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    return outstr
+    pass
 
 
 @openflow_s_message("OFPT_GET_CONFIG_REPLY", 8,
@@ -4329,12 +3746,7 @@ class ofp_get_config_reply (ofp_header): # uses ofp_switch_config
     return True
 
   def show (self, prefix=''):
-    outstr = ''
-    outstr += prefix + 'header: \n'
-    outstr += ofp_header.show(self, prefix + '  ')
-    outstr += prefix + 'flags: ' + str(self.flags) + '\n'
-    outstr += prefix + 'miss_send_len: ' + str(self.miss_send_len) + '\n'
-    return outstr
+    pass
 
 
 def _unpack_queue_props (b, length, offset=0):
@@ -4389,15 +3801,7 @@ def _unpack_actions (b, length, offset=0):
 
 def _init ():
   def formatMap (name, m):
-    o = name + " = {\n"
-    vk = sorted([(v,k) for k,v in m.items()])
-    maxlen = 2 + len(reduce(lambda a,b: a if len(a)>len(b) else b,
-                            (v for k,v in vk)))
-    fstr = "  %-" + str(maxlen) + "s : %s,\n"
-    for v,k in vk:
-      o += fstr % ("'" + k + "'",v)
-    o += "}"
-    return o
+    pass
   """
   maps = []
   for k,v in globals().iteritems():

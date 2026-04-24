@@ -53,13 +53,13 @@ class MockSocket (object):
     set a handler function on_ready(socket, size) to be called when
     data is available for reading at this socket
     """
-    self.receiving.on_data = lambda channel, size: on_ready(self, size)
+    pass
 
   def ready_to_recv (self):
-    return not self.receiving.is_empty()
+    pass
 
   def ready_to_send (self):
-    return self.sending.is_full()
+    pass
 
   def shutdown (self, sig=None):
     """
@@ -88,11 +88,7 @@ class MockSocket (object):
   @classmethod
   def pair (cls):
     """ Return a pair of connected sockets """
-    a_to_b = MessageChannel()
-    b_to_a = MessageChannel()
-    a = cls(a_to_b, b_to_a)
-    b = cls(b_to_a, a_to_b)
-    return (a,b)
+    pass
 
 class MessageChannel (object):
   """
@@ -140,11 +136,11 @@ class MessageChannel (object):
     return msg
 
   def is_empty (self):
-    return len(self.buffer) == 0
+    pass
 
   def is_full (self):
     #  buffer length not constrained currently
-    return False
+    pass
 
   def __len__ (self):
     return len(self.buffer)

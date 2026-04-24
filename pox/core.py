@@ -100,27 +100,7 @@ def getLogger (name=None, moreFrames=0):
   if not hasattr(l, "print"):
     def printmsg (*args, **kw):
       #squelch = kw.get('squelch', True)
-      msg = ' '.join((str(s) for s in args))
-      s = inspect.stack()[1]
-      o = '['
-      if 'self' in s[0].f_locals:
-        o += s[0].f_locals['self'].__class__.__name__ + '.'
-      o += s[3] + ':' + str(s[2]) + '] '
-      o += msg
-      if o == _squelch:
-        if time.time() >= _squelchTime:
-          l.debug("[Previous message repeated %i more times]" % (g['_squelchCount']+1,))
-          g['_squelchCount'] = 0
-          g['_squelchTime'] = time.time() + SQUELCH_TIME
-        else:
-          g['_squelchCount'] += 1
-      else:
-        g['_squelch'] = o
-        if g['_squelchCount'] > 0:
-          l.debug("[Previous message repeated %i more times]" % (g['_squelchCount'],))
-        g['_squelchCount'] = 0
-        g['_squelchTime'] = time.time() + SQUELCH_TIME
-        l.debug(o)
+      pass
 
     setattr(l, "print", printmsg)
     setattr(l, "msg", printmsg)
@@ -136,22 +116,14 @@ from pox.lib.revent import *
 # Now use revent's exception hook to put exceptions in event handlers into
 # the log...
 def _revent_exception_hook (source, event, args, kw, exc_info):
-  try:
-    c = source
-    t = event
-    if hasattr(c, "__class__"): c = c.__class__.__name__
-    if isinstance(t, Event): t = t.__class__.__name__
-    elif issubclass(t, Event): t = t.__name__
-  except:
-    pass
-  log.exception("Exception while handling %s!%s...\n" % (c,t))
+  pass
 import pox.lib.revent.revent
 pox.lib.revent.revent.handleEventException = _revent_exception_hook
 
 class GoingUpEvent (Event):
   """ Fired when system is going up. """
   def get_deferral (self):
-    return self.source._get_go_up_deferral()
+    pass
 
 class GoingDownEvent (Event):
   """ Fired when system is going down. """
@@ -238,12 +210,11 @@ class POXCore (EventMixin):
 
   @property
   def banner (self):
-    return "{0} / Copyright 2011-2020 James McCauley, et al.".format(
-     self.version_string)
+    pass
 
   @property
   def version_string (self):
-    return "POX %s (%s)" % ('.'.join(map(str,self.version)),self.version_name)
+    pass
 
   def callDelayed (_self, _seconds, _func, *args, **kw):
     """ Deprecated """
@@ -290,7 +261,7 @@ class POXCore (EventMixin):
     Rather than foo.raiseEvent(BarEvent, baz, spam), you just do
     core.raiseLater(foo, BarEvent, baz, spam).
     """
-    _self.scheduler.callLater(_obj.raiseEvent, *args, **kw)
+    pass
 
   def getLogger (self, *args, **kw):
     """
@@ -345,75 +316,19 @@ class POXCore (EventMixin):
     core.quit_condition.release()
 
   def _get_python_version (self):
-    try:
-      import platform
-      return "{impl} ({vers}/{build})".format(
-       impl=platform.python_implementation(),
-       vers=platform.python_version(),
-       build=platform.python_build()[1].replace("  "," "))
-    except:
-      return "Unknown Python"
+    pass
 
   def _get_platform_info (self):
-    try:
-      import platform
-      return platform.platform().split("\n")[0]
-    except:
-      return "Unknown Platform"
+    pass
 
   def _add_signal_handlers (self):
-    if not self._handle_signals:
-      return
-
-    import threading
-    # Note, python 3.4 will have threading.main_thread()
-    # http://bugs.python.org/issue18882
-    if not isinstance(threading.current_thread(), threading._MainThread):
-      raise RuntimeError("add_signal_handers must be called from MainThread")
-
-    try:
-      previous = signal.getsignal(signal.SIGHUP)
-      signal.signal(signal.SIGHUP, self._signal_handler_SIGHUP)
-      if previous != signal.SIG_DFL:
-        log.warn('Redefined signal handler for SIGHUP')
-    except (AttributeError, ValueError):
-      # SIGHUP is not supported on some systems (e.g., Windows)
-      log.debug("Didn't install handler for SIGHUP")
+    pass
 
   def _signal_handler_SIGHUP (self, signal, frame):
-    self.raiseLater(core, RereadConfiguration)
+    pass
 
   def goUp (self):
-    log.debug(self.version_string + " going up...")
-
-    log.debug("Running on " + self._get_python_version())
-    log.debug("Platform is " + self._get_platform_info())
-    try:
-      import platform
-      vers = '.'.join(platform.python_version().split(".")[:2])
-    except:
-      vers = 'an unknown version'
-    def vwarn (*args):
-      l = logging.getLogger("version")
-      if not l.isEnabledFor(logging.WARNING):
-        l.setLevel(logging.WARNING)
-      l.warn(*args)
-    good_versions = ("3.6", "3.7", "3.8", "3.9")
-    if vers not in good_versions:
-      vwarn("POX requires one of the following versions of Python: %s",
-             " ".join(good_versions))
-      vwarn("You're running Python %s.", vers)
-      vwarn("If you run into problems, try using a supported version.")
-    else:
-      vwarn("Support for Python 3 is experimental.")
-
-    self.starting_up = False
-    self.raiseEvent(GoingUpEvent())
-
-    self._add_signal_handlers()
-
-    if not self._go_up_deferrals:
-      self._goUp_stage2()
+    pass
 
   def _get_go_up_deferral (self):
     """
@@ -422,26 +337,11 @@ class POXCore (EventMixin):
     By doing this, we are deferring progress starting at the GoingUp stage.
     The return value should be called to allow progress again.
     """
-    o = object()
-    self._go_up_deferrals.add(o)
-    def deferral ():
-      if o not in self._go_up_deferrals:
-        raise RuntimeError("This deferral has already been executed")
-      self._go_up_deferrals.remove(o)
-      if not self._go_up_deferrals:
-        log.debug("Continuing to go up")
-        self._goUp_stage2()
-
-    return deferral
+    pass
 
   def _goUp_stage2 (self):
 
-    self.raiseEvent(UpEvent())
-
-    self._waiter_notify()
-
-    if self.running:
-      log.info(self.version_string + " is up.")
+    pass
 
   def _waiter_notify (self):
     if len(self._waiters):
@@ -632,19 +532,7 @@ class POXCore (EventMixin):
                 (" ".join(set(listen_args).difference(components)),))
 
     def done (sink, components, attrs, short_attrs):
-      if attrs or short_attrs:
-        for c in components:
-          if short_attrs:
-            attrname = c
-          else:
-            attrname = '_%s_' % (c,)
-          setattr(sink, attrname, getattr(self, c))
-      for c in components:
-        if hasattr(getattr(self, c), "_eventMixin_events"):
-          kwargs = {"prefix":c}
-          kwargs.update(listen_args.get(c, {}))
-          getattr(self, c).addListeners(sink, **kwargs)
-      getattr(sink, "_all_dependencies_met", lambda : None)()
+      pass
 
 
     self.call_when_ready(done, components, name=sink.__class__.__name__,

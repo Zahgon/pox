@@ -40,11 +40,11 @@ class CommandEvent (Event):
 
   @property
   def first (self):
-    return self.cmd.strip().split()[0]
+    pass
 
   @property
   def args (self):
-    return self.cmd.strip().split()[1:]
+    pass
 
   def __str__ (self):
     return "<%s: %s>" % (self.worker, self.cmd)
@@ -79,7 +79,7 @@ class Worker (RecocoIOWorker):
     self._process(self.read())
 
   def _exec (self, msg):
-    msg.split()
+    pass
 
 
 class Server (EventMixin):
@@ -97,44 +97,12 @@ class Server (EventMixin):
 
 def create_server (port = 7791):
   # Set up logging
-  global log
-  if not log:
-    log = core.getLogger()
-
-  # Set up IO loop
-  global _ioloop
-  if not _ioloop:
-    _ioloop = RecocoIOLoop()
-    #_ioloop.more_debugging = True
-    _ioloop.start()
-
-  c = Server(port = int(port))
-  return c
+  pass
 
 
 def server (port = 7791):
-  c = create_server(int(port))
-  core.register("ctld", c)
+  pass
 
 
 def launch (cmd, address = None, port = 7791):
-  core.quit()
-  if not address:
-    address = "127.0.0.1"
-  import socket
-  core.getLogger('core').setLevel(100)
-  log = core.getLogger('ctl')
-  try:
-    s = socket.create_connection((address,port), timeout=2)
-  except:
-    log.error("Couldn't connect")
-    return
-  try:
-    s.settimeout(2)
-    s.send(cmd + "\n")
-    d = s.recv(4096).strip()
-    core.getLogger("ctl").info(d)
-  except socket.timeout:
-    log.warn("No response")
-  except:
-    log.exception("While communicating")
+  pass

@@ -52,7 +52,7 @@ class DHCPLease (Event):
     self._nak = False
 
   def nak (self):
-    self._nak = True
+    pass
 
 
 class AddressPool (object):
@@ -159,7 +159,7 @@ class SimpleAddressPool (AddressPool):
 
   @property
   def subnet_mask (self):
-    return IPAddr(((1<<self.network_size)-1) << self.host_size)
+    pass
 
   @property
   def count (self):
@@ -287,20 +287,7 @@ class DHCPD (EventMixin):
     If there is a server, but the connection to the relevant switch is down,
     returns None.
     """
-    for s in cls.servers:
-      if s.dpid != dpid: continue
-      conn = core.openflow.getConnection(s.dpid)
-      if not conn: continue
-      if s.ports is None: return s
-      port_no = conn.ports.get(port)
-      if port_no is None: continue
-      port_no = port_no.port_no
-      for p in s.ports:
-        p = conn.ports.get(p)
-        if p is None: continue
-        if p.port_no == port_no:
-          return s
-    return None
+    pass
 
   @classmethod
   def get_ports_for_dpid (cls, dpid):
@@ -309,42 +296,16 @@ class DHCPD (EventMixin):
 
     If the switch is disconnected, returns None.
     """
-    r = set()
-    for s in cls._servers:
-      if s.dpid != dpid: continue
-      conn = core.openflow.getConnection(s.dpid)
-      if not conn: continue
-      if s.ports is None:
-        for p in conn.ports:
-          r.add((p.port_no,s))
-      else:
-        for p in s.ports:
-          p = conn.ports.get(p)
-          if p is None: continue
-          r.add((p.port_no,s))
-    return r
+    pass
 
   def _handle_ConnectionUp (self, event):
-    if self.dpid is not None and self.dpid != event.dpid: return
-    if self._install_flow:
-      msg = self._get_flow_mod()
-      event.connection.send(msg)
+    pass
 
   def _get_flow_mod (self, msg_type=of.ofp_flow_mod):
     """
     Get flow mods that will send DHCP to the controller
     """
-    #TODO: We might over-match right now since we don't limit by port
-    msg = msg_type()
-    msg.match = of.ofp_match()
-    msg.match.dl_type = pkt.ethernet.IP_TYPE
-    msg.match.nw_proto = pkt.ipv4.UDP_PROTOCOL
-    #msg.match.nw_dst = IP_BROADCAST
-    msg.match.tp_src = pkt.dhcp.CLIENT_PORT
-    msg.match.tp_dst = pkt.dhcp.SERVER_PORT
-    msg.actions.append(of.ofp_action_output(port = of.OFPP_CONTROLLER))
-    #msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
-    return msg
+    pass
 
   def _get_pool (self, event):
     """
@@ -352,60 +313,11 @@ class DHCPD (EventMixin):
 
     Return None to not issue an IP.  You should probably log this.
     """
-    return self.pool
+    pass
 
   def _handle_PacketIn (self, event):
     # Is it to us?  (Or at least not specifically NOT to us...)
-    if self.dpid is not None and self.dpid != event.dpid: return
-    if self.ports:
-      for p in self.ports:
-        if p == event.port: break
-        if p in event.connection.ports:
-          if event.connection.ports[p].port_no == event.port: break
-      else:
-        return
-    ipp = event.parsed.find('ipv4')
-    if not ipp or not ipp.parsed:
-      return
-    if ipp.dstip not in (IP_ANY,IP_BROADCAST,self.ip_addr):
-      return
-
-    # Is it full and proper DHCP?
-    nwp = ipp.payload
-    if not nwp or not nwp.parsed or not isinstance(nwp, pkt.udp):
-      return
-    if nwp.srcport != pkt.dhcp.CLIENT_PORT:
-      return
-    if nwp.dstport != pkt.dhcp.SERVER_PORT:
-      return
-    p = nwp.payload
-    if not p:
-      log.debug("%s: no packet", str(event.connection))
-      return
-    if not isinstance(p, pkt.dhcp):
-      log.debug("%s: packet is not DHCP", str(event.connection))
-      return
-    if not p.parsed:
-      log.debug("%s: DHCP packet not parsed", str(event.connection))
-      return
-
-    if p.op != p.BOOTREQUEST:
-      return
-
-    t = p.options.get(p.MSG_TYPE_OPT)
-    if t is None:
-      return
-
-    pool = self._get_pool(event)
-    if pool is None:
-      return
-
-    if t.type == p.DISCOVER_MSG:
-      self.exec_discover(event, p, pool)
-    elif t.type == p.REQUEST_MSG:
-      self.exec_request(event, p, pool)
-    elif t.type == p.RELEASE_MSG:
-      self.exec_release(event, p, pool)
+    pass
 
   def reply (self, event, msg):
     orig = event.parsed.find('dhcp')
@@ -436,118 +348,22 @@ class DHCPD (EventMixin):
     event.connection.send(po)
 
   def nak (self, event, msg = None):
-    if msg is None:
-      msg = pkt.dhcp()
-    msg.add_option(pkt.DHCP.DHCPMsgTypeOption(msg.NAK_MSG))
-    msg.siaddr = self.ip_addr
-    self.reply(event, msg)
+    pass
 
   def exec_release (self, event, p, pool):
-    src = event.parsed.src
-    if src != p.chaddr:
-      log.warn("%s tried to release %s with bad chaddr" % (src,p.ciaddr))
-      return
-    if self.leases.get(p.chaddr) != p.ciaddr:
-      log.warn("%s tried to release unleased %s" % (src,p.ciaddr))
-      return
-    del self.leases[p.chaddr]
-    pool.append(p.ciaddr)
-    log.info("%s released %s" % (src,p.ciaddr))
+    pass
 
   def exec_request (self, event, p, pool):
-    if not p.REQUEST_IP_OPT in p.options:
-      # Uhhh...
-      return
-    wanted_ip = p.options[p.REQUEST_IP_OPT].addr
-    src = event.parsed.src
-    got_ip = None
-    if src in self.leases:
-      if wanted_ip != self.leases[src]:
-        pool.append(self.leases[src])
-        del self.leases[src]
-      else:
-        got_ip = self.leases[src]
-    if got_ip is None:
-      if src in self.offers:
-        if wanted_ip != self.offers[src]:
-          pool.append(self.offers[src])
-          del self.offers[src]
-        else:
-          got_ip = self.offers[src]
-    if got_ip is None:
-      if wanted_ip in pool:
-        pool.remove(wanted_ip)
-        got_ip = wanted_ip
-    if got_ip is None:
-      log.warn("%s asked for un-offered %s", src, wanted_ip)
-      self.nak(event)
-      return
-
-    assert got_ip == wanted_ip
-    self.leases[src] = got_ip
-    ev = DHCPLease(src, got_ip)
-    self.raiseEvent(ev)
-    if ev._nak:
-      self.nak(event)
-      return
-    log.info("Leased %s to %s" % (got_ip, src))
-
-    reply = pkt.dhcp()
-    reply.add_option(pkt.DHCP.DHCPMsgTypeOption(p.ACK_MSG))
-    reply.yiaddr = wanted_ip
-    reply.siaddr = self.ip_addr
-
-    wanted_opts = set()
-    if p.PARAM_REQ_OPT in p.options:
-      wanted_opts.update(p.options[p.PARAM_REQ_OPT].options)
-    self.fill(wanted_opts, reply)
-
-    self.reply(event, reply)
+    pass
 
   def exec_discover (self, event, p, pool):
-    reply = pkt.dhcp()
-    reply.add_option(pkt.DHCP.DHCPMsgTypeOption(p.OFFER_MSG))
-    src = event.parsed.src
-    if src in self.leases:
-      offer = self.leases[src]
-      del self.leases[src]
-      self.offers[src] = offer
-    else:
-      offer = self.offers.get(src)
-      if offer is None:
-        if len(pool) == 0:
-          log.error("Out of IP addresses")
-          self.nak(event)
-          return
-
-        offer = pool[0]
-        if p.REQUEST_IP_OPT in p.options:
-          wanted_ip = p.options[p.REQUEST_IP_OPT].addr
-          if wanted_ip in pool:
-            offer = wanted_ip
-        pool.remove(offer)
-        self.offers[src] = offer
-    reply.yiaddr = offer
-    reply.siaddr = self.ip_addr
-
-    wanted_opts = set()
-    if p.PARAM_REQ_OPT in p.options:
-      wanted_opts.update(p.options[p.PARAM_REQ_OPT].options)
-    self.fill(wanted_opts, reply)
-
-    self.reply(event, reply)
+    pass
 
   def fill (self, wanted_opts, msg):
     """
     Fill out some options in msg
     """
-    if msg.SUBNET_MASK_OPT in wanted_opts:
-      msg.add_option(pkt.DHCP.DHCPSubnetMaskOption(self.subnet))
-    if msg.ROUTERS_OPT in wanted_opts and self.router_addr is not None:
-      msg.add_option(pkt.DHCP.DHCPRoutersOption(self.router_addr))
-    if msg.DNS_SERVER_OPT in wanted_opts and self.dns_addr is not None:
-      msg.add_option(pkt.DHCP.DHCPDNSServersOption(self.dns_addr))
-    msg.add_option(pkt.DHCP.DHCPIPAddressLeaseTimeOption(self.lease_time))
+    pass
 
 
 def default (no_flow = False,
@@ -559,7 +375,7 @@ def default (no_flow = False,
   """
   Launch DHCP server defaulting to 192.168.0.100-199
   """
-  launch(no_flow, network, first, last, count, ip, router, dns)
+  pass
 
 
 def launch (no_flow = False,
@@ -586,33 +402,4 @@ def launch (no_flow = False,
   dns      DNS IP to tell clients.  Defaults to 'router'.  'None' will
            stop the server from telling clients anything.
   """
-  def fixint (i):
-    i = str(i)
-    if i.lower() == "none": return None
-    if i.lower() == "true": return None
-    return int(i)
-  def fix (i):
-    i = str(i)
-    if i.lower() == "none": return None
-    if i.lower() == "true": return None
-    if i == '()': return ()
-    return i
-  first,last,count = map(fixint,(first,last,count))
-  router,dns = map(fix,(router,dns))
-
-  if ports is not None:
-    ports = ports.split(",")
-    ports = set(int(p) if p.isdigit() else p for p in ports)
-
-  pool = SimpleAddressPool(network = network, first = first, last = last,
-                           count = count)
-
-  inst = DHCPD(install_flow = not no_flow, pool = pool,
-               ip_address = ip, router_address = router,
-               dns_address = dns, dpid = dpid, ports = ports)
-
-  if __INSTANCE__[0] == 0:
-    # First or only instance
-    core.register(inst)
-
-  log.debug("DHCP serving a%s", str(pool)[2:-1])
+  pass

@@ -329,42 +329,7 @@ class dns(packet_base):
         self.parsed = True
 
     def _to_str(self):
-        flags = "|"
-
-        if self.qr != 0:
-            flags += "QR "
-        if self.tc != 0:
-            flags += "TR "
-        if self.rd != 0:
-            flags += "RD "
-        if self.ra != 0:
-            flags += "RA "
-        if self.z != 0:
-            flags += "Z "
-
-        flags += "|"
-
-        s = "(id:%x fl:%s op:%d nq:%d na:%d nath:%d nadd:%d)" % (self.id,
-         flags, self.opcode, len(self.questions), len(self.answers),
-         len(self.authorities), len(self.additional))
-
-        if len(self.questions) > 0:
-            for q in self.questions:
-                s += "(q? "+str(q)+")"
-
-        if len(self.answers) > 0:
-            for a in self.answers:
-                s += "(answ: "+str(a)+")"
-
-        if len(self.authorities) > 0:
-            for a in self.authorities:
-                s += "(auth: "+str(a)+")"
-
-        if len(self.additional) > 0:
-            for a in self.additional:
-                s += "(add: "+str(a)+")"
-
-        return s
+        pass
 
     # Utility methods for parsing.  Generally these would be pulled out
     # into a separate class. However, because the lengths are not known

@@ -67,7 +67,7 @@ class Record (object):
 
   @property
   def expired (self):
-    return time.time() > self._expires_at
+    pass
 
   def touch (self):
     self._expires_at = time.time() + FLOW_MEMORY_TIMEOUT
@@ -108,38 +108,13 @@ class NAT (object):
     core.listen_to_dependencies(self)
 
   def _all_dependencies_met (self):
-    log.debug('Trying to start...')
-    if self.dpid in core.openflow.connections:
-      self._start(core.openflow.connections[self.dpid])
-    else:
-      core.openflow.addListenerByName('ConnectionUp',
-          self.__handle_dpid_ConnectionUp)
-
-    self.expire_timer = Timer(60, self._expire, recurring = True)
+    pass
 
   def _expire (self):
-    dead = []
-    for r in self._record_by_outgoing.values():
-      if r.expired:
-        dead.append(r)
-
-    for r in dead:
-      del self._record_by_outgoing[r.outgoing_match]
-      del self._record_by_incoming[r.incoming_match]
-      self._used_ports.remove((r.outgoing_match.nw_proto,r.fake_srcport))
-
-    if dead and not self._record_by_outgoing:
-      log.debug("All flows expired")
+    pass
 
   def _is_local (self, ip):
-    if ip.is_multicast: return True
-    if self.subnet is not None:
-      if ip.in_network(self.subnet): return True
-      return False
-    if ip.in_network('192.168.0.0/16'): return True
-    if ip.in_network('10.0.0.0/8'): return True
-    if ip.in_network('172.16.0.0/12'): return True
-    return False
+    pass
 
   def _pick_port (self, flow):
     """
@@ -148,188 +123,28 @@ class NAT (object):
     flow is the match of the connection
     returns port (maybe from flow, maybe not)
     """
-
-    port = flow.tp_src
-
-    if port < 1024:
-      # Never allow these
-      port = random.randint(49152, 65534)
-
-    # Pretty sloppy!
-
-    cycle = 0
-    while cycle < 2:
-      if (flow.nw_proto,port) not in self._used_ports:
-        self._used_ports.add((flow.nw_proto,port))
-        return port
-      port += 1
-      if port >= 65534:
-        port = 49152
-        cycle += 1
-
-    log.warn("No ports to give!")
-    return None
+    pass
 
   @property
   def _outside_eth (self):
-    if self._connection is None: return None
-    #return self._connection.eth_addr
-    return self._connection.ports[self._outside_portno].hw_addr
+    pass
 
   def _handle_FlowRemoved (self, event):
     pass
 
   @staticmethod
   def strip_match (o):
-    m = of.ofp_match()
-
-    fields = 'dl_dst dl_src nw_dst nw_src tp_dst tp_src dl_type nw_proto'
-
-    for f in fields.split():
-      setattr(m, f, getattr(o, f))
-
-    return m
+    pass
 
   @staticmethod
   def make_match (o):
-    return NAT.strip_match(of.ofp_match.from_packet(o))
+    pass
 
   def _handle_PacketIn (self, event):
-    if self._outside_eth is None: return
-
-    #print
-    #print "PACKET",event.connection.ports[event.port].name,event.port,
-    #print self.outside_port, self.make_match(event.ofp)
-
-    incoming = event.port == self._outside_portno
-
-    if self._gateway_eth is None:
-      # Need to find gateway MAC -- send an ARP
-      self._arp_for_gateway()
-      return
-
-    packet = event.parsed
-    dns_hack = False
-
-    # We only handle TCP and UDP
-    tcpp = packet.find('tcp')
-    if not tcpp:
-      tcpp = packet.find('udp')
-      if not tcpp: return
-      if tcpp.dstport == 53 and tcpp.prev.dstip == self.inside_ip:
-        if self.dns_ip and not incoming:
-          # Special hack for DNS since we've lied and claimed to be the server
-          dns_hack = True
-    ipp = tcpp.prev
-
-    if not incoming:
-      # Assume we only NAT public addresses
-      if self._is_local(ipp.dstip) and not dns_hack: return
-    else:
-      # Assume we only care about ourselves
-      if ipp.dstip != self.outside_ip: return
-
-    match = self.make_match(event.ofp)
-
-    if incoming:
-      match2 = match.clone()
-      match2.dl_dst = None # See note below
-      record = self._record_by_incoming.get(match2)
-      if record is None:
-        # Ignore for a while
-        fm = of.ofp_flow_mod()
-        fm.idle_timeout = 1
-        fm.hard_timeout = 10
-        fm.match = of.ofp_match.from_packet(event.ofp)
-        event.connection.send(fm)
-        return
-      log.debug("%s reinstalled", record)
-      record.incoming_fm.data = event.ofp # Hacky!
-    else:
-      record = self._record_by_outgoing.get(match)
-      if record is None:
-        record = Record()
-
-        record.real_srcport = tcpp.srcport
-        record.fake_srcport = self._pick_port(match)
-
-        # Outside heading in
-        fm = of.ofp_flow_mod()
-        fm.flags |= of.OFPFF_SEND_FLOW_REM
-        fm.hard_timeout = FLOW_TIMEOUT
-
-        fm.match = match.flip()
-        fm.match.in_port = self._outside_portno
-        fm.match.nw_dst = self.outside_ip
-        fm.match.tp_dst = record.fake_srcport
-        fm.match.dl_src = self._gateway_eth
-
-        # We should set dl_dst, but it can get in the way.  Why?  Because
-        # in some situations, the ARP may ARP for and get the local host's
-        # MAC, but in others it may not.
-        #fm.match.dl_dst = self._outside_eth
-        fm.match.dl_dst = None
-
-        fm.actions.append(of.ofp_action_dl_addr.set_src(packet.dst))
-        fm.actions.append(of.ofp_action_dl_addr.set_dst(packet.src))
-        fm.actions.append(of.ofp_action_nw_addr.set_dst(ipp.srcip))
-
-        if dns_hack:
-          fm.match.nw_src = self.dns_ip
-          fm.actions.append(of.ofp_action_nw_addr.set_src(self.inside_ip))
-        if record.fake_srcport != record.real_srcport:
-          fm.actions.append(of.ofp_action_tp_port.set_dst(record.real_srcport))
-
-        fm.actions.append(of.ofp_action_output(port = event.port))
-
-        record.incoming_match = self.strip_match(fm.match)
-        record.incoming_fm = fm
-
-        # Inside heading out
-        fm = of.ofp_flow_mod()
-        fm.data = event.ofp
-        fm.flags |= of.OFPFF_SEND_FLOW_REM
-        fm.hard_timeout = FLOW_TIMEOUT
-        fm.match = match.clone()
-        fm.match.in_port = event.port
-        fm.actions.append(of.ofp_action_dl_addr.set_src(self._outside_eth))
-        fm.actions.append(of.ofp_action_nw_addr.set_src(self.outside_ip))
-        if dns_hack:
-          fm.actions.append(of.ofp_action_nw_addr.set_dst(self.dns_ip))
-        if record.fake_srcport != record.real_srcport:
-          fm.actions.append(of.ofp_action_tp_port.set_src(record.fake_srcport))
-        fm.actions.append(of.ofp_action_dl_addr.set_dst(self._gateway_eth))
-        fm.actions.append(of.ofp_action_output(port = self._outside_portno))
-
-        record.outgoing_match = self.strip_match(fm.match)
-        record.outgoing_fm = fm
-
-        self._record_by_incoming[record.incoming_match] = record
-        self._record_by_outgoing[record.outgoing_match] = record
-
-        log.debug("%s installed", record)
-      else:
-        log.debug("%s reinstalled", record)
-        record.outgoing_fm.data = event.ofp # Hacky!
-
-    record.touch()
-
-    # Send/resend the flow mods
-    if incoming:
-      data = record.outgoing_fm.pack() + record.incoming_fm.pack()
-    else:
-      data = record.incoming_fm.pack() + record.outgoing_fm.pack()
-    self._connection.send(data)
-
-    # We may have set one of the data fields, but they should be reset since
-    # they won't be valid in the future.  Kind of hacky.
-    record.outgoing_fm.data = None
-    record.incoming_fm.data = None
+    pass
 
   def __handle_dpid_ConnectionUp (self, event):
-    if event.dpid != self.dpid:
-      return
-    self._start(event.connection)
+    pass
 
   def _start (self, connection):
     self._connection = connection
@@ -362,29 +177,10 @@ class NAT (object):
                                       src_ip = self.outside_ip)
 
   def _handle_ARPHelper_ARPReply (self, event):
-    if event.dpid != self.dpid: return
-    if event.port != self._outside_portno: return
-    if event.reply.protosrc == self.gateway_ip:
-      self._gateway_eth = event.reply.hwsrc
-      log.info("Gateway %s is %s", self.gateway_ip, self._gateway_eth)
+    pass
 
   def _handle_ARPHelper_ARPRequest (self, event):
-    if event.dpid != self.dpid: return
-
-    dstip = event.request.protodst
-    if event.port == self._outside_portno:
-      if dstip == self.outside_ip:
-        if self._connection is None:
-          log.warn("Someone tried to ARP us, but no connection yet")
-        else:
-          event.reply = self._outside_eth
-    else:
-      if dstip == self.inside_ip or not self._is_local(dstip):
-        if self._connection is None:
-          log.warn("Someone tried to ARP us, but no connection yet")
-        else:
-          #event.reply = self._connection.eth_addr
-          event.reply = self._connection.ports[event.port].hw_addr
+    pass
 
 
 class NATDHCPD (DHCPD):
@@ -401,64 +197,13 @@ class NATDHCPD (DHCPD):
     super(NATDHCPD,self).__init__(*args,**kw)
 
   def _handle_ConnectionUp (self, event):
-    if self._dpid != event.dpid: return
-    ports = event.connection.ports
-    if self._outside_port_name not in ports:
-      log.warn("No port %s on DPID %s", self._outside_port_name,
-          dpid_to_str(self._dpid))
-      return
-    self._outside_port_no = ports[self._outside_port_name].port_no
-
-    return super(NATDHCPD,self)._handle_ConnectionUp(event)
+    pass
 
   def _handle_PacketIn (self, event):
-    if self._dpid != event.dpid: return
-    if event.port == self._outside_port_no: return
-    return super(NATDHCPD,self)._handle_PacketIn(event)
+    pass
 
 
 def launch (dpid, outside_port, subnet = '172.16.1.0/24',
             inside_ip = '172.16.1.1'):
 
-  import pox.proto.dhcp_client as dc
-  dc.launch(dpid = dpid, port = outside_port, port_eth = True)
-
-  import pox.proto.arp_helper as ah
-  ah.launch(use_port_mac = True)
-
-  dpid = str_to_dpid(dpid)
-  inside_ip = IPAddr(inside_ip)
-
-  pool = SimpleAddressPool(network = subnet, first = 100, last = 199)
-
-  core.registerNew(NATDHCPD, install_flow = True, pool = pool,
-                   ip_address = inside_ip, router_address = inside_ip,
-                   dns_address = inside_ip, dpid = dpid,
-                   outside_port = outside_port)
-
-
-  def got_lease (event):
-    outside_ip = event.lease.address
-
-    if not event.lease.routers:
-      log.error("Can't start NAT because we didn't get an upstream gateway")
-      return
-    gateway_ip = event.lease.routers[0]
-
-    if event.lease.dns_servers:
-      dns_ip = event.lease.dns_servers[0]
-    else:
-      dns_ip = None
-
-    log.debug('Starting NAT')
-
-    n = NAT(inside_ip, outside_ip, gateway_ip, dns_ip, outside_port, dpid,
-            subnet=subnet)
-    core.register(n)
-
-
-  def init ():
-    log.debug('Waiting for DHCP lease on port %s', outside_port)
-    core.DHCPClient.addListenerByName('DHCPLeased', got_lease)
-
-  core.call_when_ready(init, ['DHCPClient'])
+  pass

@@ -408,13 +408,7 @@ class CallBlocking (BlockingOperation):
     self.kw = kw
 
   def _proc (self):
-    try:
-      self.task.rv = (self.func(*self.args, **self.kw), None)
-    except:
-      import sys
-      self.task.rv = (None, sys.exc_info())
-
-    self.scheduler.fast_schedule(self.task)
+    pass
 
   def execute (self, task, scheduler):
     self.task = task
@@ -580,17 +574,7 @@ class Recv (BlockingOperation):
 
   def _recvReturnFunc (self, task):
     # Select() will have placed file descriptors in rv
-    if len(task.rv[2]) != 0 or len(task.rv[0]) == 0:
-      # Socket error
-      task.rv = None
-      return None
-    sock = task.rv[0][0]
-    task.rv = None
-    try:
-      return sock.recv(self._length, self._flags)
-    except:
-      #traceback.print_exc()
-      return None #
+    pass
 
   def execute (self, task, scheduler):
     task.rf = self._recvReturnFunc
@@ -600,17 +584,7 @@ class Recv (BlockingOperation):
 class RecvFrom (Recv):
   def _recvReturnFunc (self, task):
     # Select() will have placed file descriptors in rv
-    if len(task.rv[2]) != 0 or len(task.rv[0]) == 0:
-      # Socket error
-      task.rv = None
-      return None
-    sock = task.rv[0][0]
-    task.rv = None
-    try:
-      return sock.recvfrom(self._length, self._flags)
-    except:
-      #traceback.print_exc()
-      return None #
+    pass
 
 class Send (BlockingOperation):
   def __init__ (self, fd, data, timeout = None, block_size=1024*8):
@@ -625,37 +599,7 @@ class Send (BlockingOperation):
 
   def _sendReturnFunc (self, task):
     # Select() will have placed file descriptors in rv
-    if len(task.rv[2]) != 0 or len(task.rv[1]) == 0:
-      # Socket error
-      task.rv = None
-      return self._sent
-    sock = task.rv[1][0]
-
-    bs = self._block_size
-    data = self._data
-    if len(data) > bs: data = data[:bs]
-    try:
-      l = sock.send(data, socket.MSG_DONTWAIT)
-    except socket.error:
-      # Just try again?
-      l = 0
-
-    if l == 0:
-      # Select and try again later
-      scheduler._selectHub.registerSelect(task, None, [self._fd], [self._fd],
-                                          timeout=self._timeout)
-      return ABORT
-
-    self._sent += l
-    self._data = self._data[l:]
-    if not self._data:
-      # Done!
-      self.rv = None
-      return self._sent
-
-    # Still have data to send...
-    self.execute(task, self._scheduler)
-    return ABORT
+    pass
 
   def execute (self, task, scheduler):
     self._scheduler = scheduler
@@ -666,39 +610,7 @@ class Send (BlockingOperation):
 
 class AgainTask (Task):
   def run_again (self):
-    parent = self.parent
-    g = parent.subtask_func
-    parent.task.rv = None
-
-    try:
-      nxt = g.send(None)
-    except Exception:
-      parent.task.re = sys.exc_info()
-    else:
-      while True:
-        if isinstance(nxt, BlockingOperation):
-          try:
-            v = yield nxt
-            do_next = lambda: g.send(v)
-          except Exception as e:
-            exc_info = sys.exc_info()
-            do_next = lambda: g.throw(*exc_info)
-          try:
-            nxt = do_next()
-          except StopIteration:
-            # Iterator just ran out, so...
-            break
-          except Exception:
-            parent.task.re = sys.exc_info()
-            break
-        else:
-          # "yield" used like return
-          parent.task.rv = nxt
-          break
-    #print("reschedule",parent.task)
-    # Schedule the parent to run next, which maintains the illusion of a
-    # function return without the parent have given up its time.
-    parent.scheduler.fast_schedule(parent.task, first=True)
+    pass
   run = run_again
 
 class Again (BlockingOperation):
@@ -766,15 +678,7 @@ def task_function (f):
    * Have f() make calls to other Recoco blocking ops with yield (as usual)
    * You can now call f() from a Recoco task using yield f().
   """
-  if not inspect.isgeneratorfunction(f):
-    # Well, let's just make it one...
-    real_f = f
-    def gen_f (*args, **kw):
-      yield real_f(*args, **kw)
-    f = gen_f
-  def run (*args, **kw):
-    return Again(f(*args,**kw))
-  return run
+  pass
 
 
 #TODO: just merge this in with Scheduler?
@@ -829,13 +733,7 @@ class SelectHub (object):
       self._cycle()
 
   def _threadProc (self):
-    tasks = self._tasks
-    rets = {}
-    _select = self._select
-    _scheduler = self._scheduler
-
-    while not _scheduler._hasQuit:
-      _select(tasks, rets)
+    pass
 
   def _select (self, tasks, rets):
     #print("SelectHub cycle")

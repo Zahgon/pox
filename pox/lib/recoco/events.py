@@ -29,19 +29,14 @@ class ReventWaiter (revent.EventMixin):
 
   def registerForEventByName (self, source, eventName,
                               once=False, weak=False, priority=None):
-    return source.addListenerByName(eventName,
-                                    partial(self._eventHandler, source),
-                                    once=once, weak=weak, priority=priority)
+    pass
 
   def registerForEvent (self, source, eventType,
                         once=False, weak=False, priority=None):
-    return source.addListener(eventType,
-                              partial(self._eventHandler, source),
-                              once=once, weak=weak, priority=priority)
+    pass
 
   def _eventHandler (self, src, *args, **kw):
-    self._events.append((src, args, kw))
-    self._check()
+    pass
 
   def _check (self):
     if len(self._events) > 0:
@@ -60,29 +55,16 @@ class ReventWaiter (revent.EventMixin):
     self._wakeLock.release()
 
   def getEvent (self):
-    try:
-      return self._events.popleft()
-    except:
-      return None
+    pass
 
   def getEvents (self):
-    r = []
-    while True:
-      try:
-        r.append(self._events.popleft())
-      except:
-        break
-    return r
+    pass
 
   def waitAll (self):
-    def cb (task):
-      return self.getEvents()
-    return WaitOnEvents(self, rf=cb)
+    pass
 
   def waitOne (self):
-    def cb (task):
-      return self.getEvent()
-    return WaitOnEvents(self, rf=cb)
+    pass
 
 
 
@@ -92,7 +74,7 @@ class WaitOnEvents (recoco.BlockingOperation):
     self._rf = rf
 
   def _default_rf (self):
-    return self._waiter
+    pass
 
   def execute (self, task, scheduler):
     #Next two should go into reset()?

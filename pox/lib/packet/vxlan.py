@@ -76,8 +76,7 @@ class vxlan (packet_base):
         The RFC recommends using a hash of the inner Ethernet fields and
         putting that in the range starting at 49152, so that's what we do.
         """
-        h = hash(eth.hdr(None))
-        return h % (65535 - self.START_SRC_PORT + 1) + self.START_SRC_PORT
+        pass
 
     def parse(self, raw):
         assert isinstance(raw, bytes)

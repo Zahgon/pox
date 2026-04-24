@@ -62,13 +62,13 @@ class DHCPOffer (Event):
     self._accept = None
 
   def reject (self):
-    self._accept = False
+    pass
 
   def accept (self):
     self._accept = True
 
   def option (self, option, default=None):
-    return self.offer.options.get(option, default=None)
+    pass
 
 
 class DHCPOffers (Event):
@@ -221,155 +221,44 @@ class DHCPClientBase (EventMixin):
 
   def _total_timeout (self):
     # If this goes off and we haven't finished, tell the user we failed
-    self.log.warn('Did not complete successfully')
-    self.state = self.ERROR
+    pass
 
   @property
   def _secs (self):
-    return time.time() - self._start
+    pass
 
   @property
   def state (self):
-    return self._state
+    pass
 
   @state.setter
   def state (self, state):
-    old = self._state
-
-    self.log.debug("Transition: %s -> %s", old, state)
-
-    def killtimer (name):
-      name += '_timer'
-      a = getattr(self, name)
-      if a is not None:
-        a.cancel()
-      setattr(self, name, None)
-
-    def set_state (s, debug = None, warn = None, info = None):
-      def state_setter ():
-        if debug: self.log.debug(debug)
-        if warn: self.log.debug(warn)
-        if info: self.log.debug(info)
-        self.state = s
-      return state_setter
-
-
-    if old == self.INIT:
-      killtimer('discover')
-    elif old == self.SELECTING:
-      killtimer('offer')
-    elif old == self.REQUESTING:
-      killtimer('request')
-      self.requested = None
-
-    self._state_transition(old, state)
-
-    self._state = state
-
-    if state == self.INIT:
-      assert old in (self.NEW,self.INIT)
-      # We transition INIT->INIT when discovery times out
-      if old == self.NEW:
-        # In this case, we want to set a total timeout
-        killtimer('total')
-        self.total_timer = recoco.Timer(self.total_timeout,
-                                        self._do_total_timeout)
-        self._start = time.time()
-      self._discover()
-      self.discover_timer = recoco.Timer(self.discover_timeout,
-                                         set_state(self.INIT))
-    elif state == self.SELECTING:
-      assert old == self.INIT
-      self.offer_timer = recoco.Timer(self.offer_timeout,
-                                      self._do_accept)
-    elif state == self.REQUESTING:
-      assert old == self.SELECTING
-      assert self.requested
-      self._request()
-      self.request_timer = recoco.Timer(self.request_timeout,
-                                        set_state(self.INIT,info='Timeout'))
-    elif state == self.BOUND:
-      killtimer('total')
-      ev = DHCPLeased(self.bound)
-      routers = ','.join(str(g) for g in self.bound.routers)
-      if not routers: routers = "(No routers)"
-      self.log.info("Got %s/%s -> %s",
-                    self.bound.address, self.bound.subnet_mask, routers)
-
-      self.raiseEventNoErrors(ev)
-      #TODO: Handle expiring leases
-
-    elif state == self.ERROR:
-      #TODO: Error info
-      self.raiseEventNoErrors(DHCPClientError())
+    pass
 
   def _state_transition (self, old, state):
     pass
 
   def _do_total_timeout (self):
-    self.log.error('Did not successfully bind in time')
-    self.state = self.ERROR
+    pass
 
   def _add_param_requests (self, msg):
-    req = pkt.DHCP.DHCPParameterRequestOption(self.param_requests)
-    msg.add_option(req)
+    pass
 
   def _discover (self):
-    self.offers = []
-
-    msg = pkt.dhcp()
-    self._add_param_requests(msg)
-
-    self.offer_xid = self._send(msg, msg.DISCOVER_MSG)
+    pass
 
   def _request (self):
-    msg = pkt.dhcp()
-    msg.siaddr = self.requested.server
-    #self._add_param_requests(msg)
-    msg.add_option(pkt.DHCP.DHCPServerIdentifierOption(msg.siaddr))
-    msg.add_option(pkt.DHCP.DHCPRequestIPOption(self.requested.address))
-    self.request_xid = self._send(msg, msg.REQUEST_MSG)
+    pass
 
   @classmethod
   def _new_xid (cls):
-    if cls._xid == 0xffffFFFF:
-      cls._xid = 0
-    else:
-      cls._xid += 1
-
-    return cls._xid
+    pass
 
   def _send (self, msg, msg_type):
-    msg.flags |= msg.BROADCAST_FLAG
-    msg.htype = 1
-    msg.hlen = 6
-    msg.op = msg.BOOTREQUEST
-    msg.secs = self._secs
-    msg.xid = self._new_xid()
-    msg.chaddr = self.port_eth
-
-    #if msg.siaddr != pkt.ipv4.IP_ANY:
-    #  msg.add_option(pkt.DHCP.DHCPServerIdentifierOption(self.msg.siaddr))
-    msg.add_option(pkt.DHCP.DHCPMsgTypeOption(msg_type))
-
-    self._send_dhcp(msg)
-
-    return msg.xid
+    pass
 
   def _send_dhcp (self, msg):
-    ethp = pkt.ethernet(src=self.port_eth, dst=pkt.ETHER_BROADCAST)
-    ethp.type = pkt.ethernet.IP_TYPE
-    ipp = pkt.ipv4()
-    ipp.srcip = pkt.IP_ANY #NOTE: If rebinding, use existing local IP?
-    ipp.dstip = pkt.IP_BROADCAST
-    ipp.protocol = ipp.UDP_PROTOCOL
-    udpp = pkt.udp()
-    udpp.srcport = pkt.dhcp.CLIENT_PORT
-    udpp.dstport = pkt.dhcp.SERVER_PORT
-    udpp.payload = msg
-    ipp.payload = udpp
-    ethp.payload = ipp
-    self._send_data(ethp.pack())
+    pass
 
   def _send_data (self, data):
     raise RuntimeError("_send_data() unimplemented")
@@ -378,78 +267,16 @@ class DHCPClientBase (EventMixin):
     """
     Input packet here
     """
-    # Is it to us?  (Or at least not specifically NOT to us...)
-    ipp = parsed.find('ipv4')
-    if not ipp or not ipp.parsed:
-      return
-    if self.bound and self.bound.address == ipp.dstip:
-      pass # Okay.
-    elif ipp.dstip not in (pkt.IP_ANY,pkt.IP_BROADCAST):
-      return
-    p = parsed.find('dhcp')
-    if p is None:
-      return
-    if not isinstance(p.prev, pkt.udp):
-      return
-    udpp = p.prev
-    if udpp.dstport != pkt.dhcp.CLIENT_PORT:
-      return
-    if udpp.srcport != pkt.dhcp.SERVER_PORT:
-      return
-    if p.op != p.BOOTREPLY:
-      return
-    t = p.options.get(p.MSG_TYPE_OPT)
-    if t is None:
-      return
-
-    if t.type == p.OFFER_MSG:
-      if p.xid != self.offer_xid:
-        if self.state in (self.INIT,self.SELECTING):
-          self.log.info('Received offer with wrong XID')
-        else:
-          self.log.debug('Received unexpected offer with wrong XID')
-        return
-      if self.state == self.INIT:
-        # First offer switches states
-        self.state = self.SELECTING
-      if self.state != self.SELECTING:
-        self.log.warn('Recieved an offer while in state %s', self.state)
-        return
-      self._exec_offer(p)
-    elif t.type in (p.ACK_MSG, p.NAK_MSG):
-      if p.xid != self.request_xid:
-        if self.state in (self.REQUESTING):
-          self.log.info('Received ACK/NAK with wrong XID')
-        else:
-          self.log.debug('Received unexpected ACK/NAK with wrong XID')
-        return
-      if self.state != self.REQUESTING:
-        self.log.warn('Recieved an ACK/NAK while in state %s', self.state)
-        return
-      if t.type == p.NAK_MSG:
-        self._exec_request_nak(p)
-      else:
-        self._exec_request_ack(p)
+    pass
 
   def _exec_offer (self, p):
-    o = DHCPOffer(p)
-    self.offers.append(o)
-    self.raiseEventNoErrors(o)
-
-    if self.auto_accept and (o._accept is not False):
-      # Good enough!
-      o._accept = True
-      self._do_accept()
+    pass
 
   def _exec_request_ack (self, p):
-    self.bound = self.requested
-    self.state = self.BOUND
+    pass
 
   def _exec_request_nak (self, p):
-    self.log.warn('DHCP server NAKed our attempted acceptance of an offer')
-
-    # Try again...
-    self.state = INIT
+    pass
 
   def _do_accept (self):
     ev = DHCPOffers(self.offers)
@@ -507,20 +334,16 @@ class OFDHCPClient (DHCPClientBase):
       self._listen_for_connection()
 
   def _handle_PacketIn (self, event):
-    if event.dpid != self.dpid: return
-    if event.port != self.portno: return
-    self._rx(event.parsed)
+    pass
 
   def _send_data (self, data):
-    po = of.ofp_packet_out(data=data)
-    po.actions.append(of.ofp_action_output(port=self.portno))
-    self._send_of(po)
+    pass
 
   def _send_of (self, data):
-    return core.openflow.connections[self.dpid].send(data)
+    pass
 
   def _handle_ConnectionUp (self, event):
-    self._try_start()
+    pass
 
   def _listen_for_connection (self):
     core.openflow.addListenerByName('ConnectionUp', self._handle_ConnectionUp,
@@ -558,42 +381,7 @@ class OFDHCPClient (DHCPClientBase):
   def _state_transition (self, old, state):
     # Make sure we're seeing packets if needed...
 
-    def get_flow (broadcast = False):
-      fm = of.ofp_flow_mod()
-      if broadcast:
-        fm.match.dl_dst = pkt.ETHER_BROADCAST
-      else:
-        fm.match.dl_dst = self.port_eth
-      fm.match.in_port = self.portno
-      fm.match.dl_type = pkt.ethernet.IP_TYPE
-      fm.match.nw_proto = pkt.ipv4.UDP_PROTOCOL
-      fm.match.tp_src = pkt.dhcp.SERVER_PORT
-      fm.match.tp_dst = pkt.dhcp.CLIENT_PORT
-      fm.priority += 1
-      return fm
-
-    if state not in (self.IDLE, self.ERROR, self.BOUND):
-      if self._packet_listener is None:
-        self._packet_listener = core.openflow.addListenerByName('PacketIn',
-            self._handle_PacketIn)
-        if self.install_flows:
-          fm = get_flow(False)
-          fm.actions.append(of.ofp_action_output(port = of.OFPP_CONTROLLER))
-          self._send_of(fm)
-          fm = get_flow(True)
-          fm.actions.append(of.ofp_action_output(port = of.OFPP_CONTROLLER))
-          self._send_of(fm)
-    else:
-      if self._packet_listener is not None:
-        core.openflow.removeListener(self._packet_listener)
-        self._packet_listener = None
-        if self.install_flows:
-          fm = get_flow(False)
-          fm.command = of.OFPFC_DELETE_STRICT
-          self._send_of(fm)
-          fm = get_flow(True)
-          fm.command = of.OFPFC_DELETE_STRICT
-          self._send_of(fm)
+    pass
 
 
 def launch (dpid, port, port_eth = None, name = None, __INSTANCE__ = None):
@@ -604,32 +392,4 @@ def launch (dpid, port, port_eth = None, name = None, __INSTANCE__ = None):
   port_eth enabled: Port MAC
   port_eth specified: Use that
   """
-  if port_eth in (True, None):
-    pass
-  else:
-    port_eth = EthAddr(port_eth)
-
-  dpid = str_to_dpid(dpid)
-  try:
-    port = int(port)
-  except:
-    pass
-
-  def dhcpclient_init ():
-    n = name
-    if n is None:
-      s = ''
-      while True:
-        if not core.hasComponent("DHCPClient" + s):
-          n = "DHCPClient" + s
-          break
-        s = str(int('0' + s) + 1)
-    else:
-      if core.hasComponent(n):
-        self.log.error("Already have component %s", n)
-        return
-
-    client = OFDHCPClient(port=port, dpid=dpid, name=n, port_eth=port_eth)
-    core.register(n, client)
-
-  core.call_when_ready(dhcpclient_init, ['openflow'])
+  pass

@@ -39,23 +39,11 @@ blocked_list = None
 clear_tables_on_change = True
 
 def add_mac (mac):
-  if mac.is_multicast: return
-  if mac.is_bridge_filtered: return
-  if mac in blocked: return
-  if mac in unblocked: return
-  unblocked.add(mac)
-  core.tk.do(unblocked_list.insert, None, END, str(mac))
+  pass
 
 def packet_handler (event):
   # Note the two MACs
-  add_mac(event.parsed.src)
-  add_mac(event.parsed.dst)
-
-  # Check for blocked MACs
-  if event.parsed.src in blocked:
-    return EventHalt
-  if event.parsed.dst in blocked:
-    return EventHalt
+  pass
 
 def get (l):
   """ Get an element from a listbox """
@@ -69,32 +57,19 @@ def get (l):
 
 def clear_flows ():
   """ Clear flows on all switches """
-  for c in core.openflow.connections:
-    d = of.ofp_flow_mod(command = of.OFPFC_DELETE)
-    c.send(d)
+  pass
 
 def move_entry (from_list, from_set, to_list, to_set):
   """ Move entry from one list to another """
-  i,mac = get(from_list)
-  if mac is None: return
-  from_list.delete(i)
-  to_list.insert(END, mac)
-  mac = EthAddr(mac)
-  to_set.add(mac)
-  from_set.remove(mac)
-
-  if clear_tables_on_change:
-    # This is coming from another thread, so don't just send -- use
-    # callLater so that it happens from the coop thread.
-    core.callLater(clear_flows)
+  pass
 
 def do_block ():
   """ Handle clicks on block button """
-  move_entry(unblocked_list, unblocked, blocked_list, blocked)
+  pass
 
 def do_unblock ():
   """ Handle clicks on unblock button """
-  move_entry(blocked_list, blocked, unblocked_list, unblocked)
+  pass
 
 def setup ():
   """ Set up GUI """
@@ -130,11 +105,4 @@ def setup ():
   core.getLogger().debug("Ready")
 
 def launch (no_clear_tables = False):
-  global clear_tables_on_change
-  clear_tables_on_change = not no_clear_tables
-
-  def start ():
-    core.openflow.addListenerByName("PacketIn",packet_handler,priority=1)
-    core.tk.do(setup)
-
-  core.call_when_ready(start, ['openflow','tk'])
+  pass

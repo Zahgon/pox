@@ -179,8 +179,7 @@ class TopoSwitch (DHCPD):
 
 
   def _handle_ARPRequest (self, event):
-    if ipinfo(event.ip)[0] is not self: return
-    event.reply = self.mac
+    pass
 
 
   def send_table (self):
@@ -354,51 +353,23 @@ class TopoSwitch (DHCPD):
 
 
   def _get_pool (self, event):
-    pool = self.pools.get(event.port)
-    if pool is None:
-      log.warn("No IP pool for port %s", event.port)
-    return pool
+    pass
 
 
   def _handle_ConnectionDown (self, event):
-    self.disconnect()
+    pass
 
 
   def _mac_learn (self, mac, ip):
-    if ip.inNetwork(self.network,"255.255.0.0"):
-      if self.ip_to_mac.get(ip) != mac:
-        self.ip_to_mac[ip] = mac
-        self._send_rewrite_rule(ip, mac)
-        return True
-    return False
+    pass
 
 
   def _on_lease (self, event):
-    if self._mac_learn(event.host_mac, event.ip):
-        self.log.debug("Learn %s -> %s by DHCP Lease",event.ip,event.host_mac)
+    pass
 
 
   def _handle_PacketIn (self, event):
-    packet = event.parsed
-    arpp = packet.find('arp')
-    if arpp is not None:
-      if event.port != ipinfo(arpp.protosrc)[1]:
-        self.log.warn("%s has incorrect IP %s", arpp.hwsrc, arpp.protosrc)
-        return
-
-      if self._mac_learn(packet.src, arpp.protosrc):
-        self.log.debug("Learn %s -> %s by ARP",arpp.protosrc,packet.src)
-    else:
-      ipp = packet.find('ipv4')
-      if ipp is not None:
-        # Should be destined for this switch with unknown MAC
-        # Send an ARP
-        sw,p,_= ipinfo(ipp.dstip)
-        if sw is self:
-          log.debug("Need MAC for %s", ipp.dstip)
-          core.ARPHelper.send_arp_request(event.connection,ipp.dstip,port=p)
-
-    return super(TopoSwitch,self)._handle_PacketIn(event)
+    pass
 
 
 class topo_addressing (object):
@@ -409,72 +380,13 @@ class topo_addressing (object):
     pass # Just here to make sure we load it
 
   def _handle_openflow_discovery_LinkEvent (self, event):
-    def flip (link):
-      return Discovery.Link(link[2],link[3], link[0],link[1])
-
-    l = event.link
-    sw1 = switches_by_dpid[l.dpid1]
-    sw2 = switches_by_dpid[l.dpid2]
-
-    # Invalidate all flows and path info.
-    # For link adds, this makes sure that if a new link leads to an
-    # improved path, we use it.
-    # For link removals, this makes sure that we don't use a
-    # path that may have been broken.
-    #NOTE: This could be radically improved! (e.g., not *ALL* paths break)
-    clear = of.ofp_flow_mod(command=of.OFPFC_DELETE)
-    for sw in switches_by_dpid.values():
-      if sw.connection is None: continue
-      sw.connection.send(clear)
-    path_map.clear()
-
-    if event.removed:
-      # This link no longer okay
-      if sw2 in adjacency[sw1]: del adjacency[sw1][sw2]
-      if sw1 in adjacency[sw2]: del adjacency[sw2][sw1]
-
-      # But maybe there's another way to connect these...
-      for ll in core.openflow_discovery.adjacency:
-        if ll.dpid1 == l.dpid1 and ll.dpid2 == l.dpid2:
-          if flip(ll) in core.openflow_discovery.adjacency:
-            # Yup, link goes both ways
-            adjacency[sw1][sw2] = ll.port1
-            adjacency[sw2][sw1] = ll.port2
-            # Fixed -- new link chosen to connect these
-            break
-    else:
-      # If we already consider these nodes connected, we can
-      # ignore this link up.
-      # Otherwise, we might be interested...
-      if adjacency[sw1][sw2] is None:
-        # These previously weren't connected.  If the link
-        # exists in both directions, we consider them connected now.
-        if flip(l) in core.openflow_discovery.adjacency:
-          # Yup, link goes both ways -- connected!
-          adjacency[sw1][sw2] = l.port1
-          adjacency[sw2][sw1] = l.port2
-
-    for sw in switches_by_dpid.values():
-      sw.send_table()
+    pass
 
 
   def _handle_openflow_ConnectionUp (self, event):
-    sw = switches_by_dpid.get(event.dpid)
-
-    if sw is None:
-      # New switch
-
-      sw = TopoSwitch()
-      switches_by_dpid[event.dpid] = sw
-      sw.connect(event.connection)
-    else:
-      sw.connect(event.connection)
+    pass
 
 
 
 def launch (debug = False):
-  core.registerNew(topo_addressing)
-  from proto.arp_helper import launch
-  launch(eat_packets=False)
-  if not debug:
-    core.getLogger("proto.arp_helper").setLevel(99)
+  pass

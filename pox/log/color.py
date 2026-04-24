@@ -79,65 +79,13 @@ CSI = "\033["
 
 def _color (color, msg):
   """ Colorizes the given text """
-  return _proc(MAGIC + color) + msg + _proc(MAGIC + 'reset').lower()
+  pass
 
 def _proc (msg, level_color = "DEBUG"):
   """
   Do some replacements on the text
   """
-  msg = msg.split(MAGIC)
-  #print "proc:",msg
-  r = ''
-  i = 0
-  cmd = False
-  while i < len(msg):
-    m = msg[i]
-    #print i,m
-    i += 1
-    if cmd:
-      best = None
-      bestlen = 0
-      for k,v in COMMANDS.items():
-        if len(k) > bestlen:
-          if m.startswith(k):
-            best = (k,v)
-            bestlen = len(k)
-      special = None
-      if best is not None and best[0].endswith(':'):
-        special = best
-        m = m[bestlen:]
-        best = None
-        bestlen = 0
-      for k,v in COLORS.items():
-        if len(k) > bestlen:
-          if m.startswith(k):
-            best = (k,v)
-            bestlen = len(k)
-      if best is not None:
-        #print "COMMAND", best
-        m = m[bestlen:]
-        if type(best[1]) is tuple:
-          # Color
-          brightness,color = best[1]
-          if special is not None:
-            if special[1] == -1:
-              brightness = None
-              color += 10
-          color += 30
-          if not _strip_only:
-            r += CSI
-            if brightness is not None:
-              r += str(brightness) + ";"
-            r += str(color) + "m"
-        elif not _strip_only:
-          # Command
-          if best[1] == -2:
-            r += _proc(MAGIC + LEVEL_COLORS.get(level_color, ""), level_color)
-          else:
-            r += CSI + str(best[1]) + "m"
-    cmd = True
-    r += m
-  return r
+  pass
 
 
 def launch (entire=False):
@@ -149,61 +97,4 @@ def launch (entire=False):
   format string.  For example, try:
    log --format="%(levelname)s: @@@bold%(message)s@@@normal" log.color
   """
-
-  global enabled
-  if enabled: return
-
-  from pox.core import core
-  log = core.getLogger()
-
-  windows_hack = False
-
-  # Try to work on Windows
-  if sys.platform == "win32":
-    try:
-      from colorama import init
-      windows_hack = True
-      init()
-    except:
-      log.info("You need colorama if you want color logging on Windows")
-      global _strip_only
-      _strip_only = True
-
-  from pox.core import _default_log_handler as dlf
-  if not dlf:
-    log.warning("Color logging disabled -- no default logger found")
-    return
-  #if not hasattr(dlf, 'formatter'):
-  #  log.warning("Color logging disabled -- no formatter found")
-  #  return
-  #if not hasattr(dlf.formatter, '_fmt'):
-  #  log.warning("Color logging disabled -- formatter unrecognized")
-  #  return
-
-  # Monkeypatch in a new format function...
-  old_format = dlf.format
-  if entire:
-    def new_format (record):
-      msg = _proc(old_format(record), record.levelname)
-      color = LEVEL_COLORS.get(record.levelname)
-      if color is None:
-        return msg
-      return _color(color, msg)
-  else:
-    def new_format (record):
-      color = LEVEL_COLORS.get(record.levelname)
-      oldlevelname = record.levelname
-      if color is not None:
-        record.levelname = _color(color, record.levelname)
-      r = _proc(old_format(record), oldlevelname)
-      record.levelname = oldlevelname
-      return r
-  dlf.format = new_format
-
-  if windows_hack:
-    if hasattr(dlf, "stream"):
-      if dlf.stream is sys.__stderr__:
-        dlf.stream = sys.stderr
-        enabled = True
-  else:
-    enabled = True
+  pass

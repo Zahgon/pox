@@ -131,7 +131,7 @@ class RawStatsReply (Event):
 
   @property
   def dpid (self):
-    return self.connection.dpid
+    pass
 
 class StatsReply (Event):
   """
@@ -144,7 +144,7 @@ class StatsReply (Event):
 
   @property
   def dpid (self):
-    return self.connection.dpid
+    pass
 
 class SwitchDescReceived (StatsReply):
   pass
@@ -190,7 +190,7 @@ class PacketIn (Event):
     """
     The packet as parsed by pox.lib.packet
     """
-    return self.parse()
+    pass
 
 class ErrorIn (Event):
   def __init__ (self, connection, ofp):
@@ -201,7 +201,7 @@ class ErrorIn (Event):
     self.should_log = True # If this remains True, an error will be logged
 
   def asString (self):
-    return self.ofp.show()
+    pass
 
 #    def lookup (m, v):
 #      if v in m:
@@ -264,19 +264,19 @@ class ConfigurationReceived (Event):
 
   @property
   def flags (self):
-    return self.ofp.flags
+    pass
 
   @property
   def miss_send_len (self):
-    return self.ofp.miss_send_len
+    pass
 
   @property
   def drop_fragments (self):
-    return (self.ofp.flags & of.OFPC_FRAG_MASK) == of.OFPC_FRAG_DROP
+    pass
 
   @property
   def reassemble_fragments (self):
-    return (self.ofp.flags & of.OFPC_FRAG_MASK) == of.OFPC_FRAG_REASM
+    pass
 
 
 class OpenFlowConnectionArbiter (EventMixin):
@@ -293,19 +293,7 @@ class OpenFlowConnectionArbiter (EventMixin):
     self._fallback = None
 
   def getNexus (self, connection):
-    e = ConnectionIn(connection)
-    self.raiseEventNoErrors(e)
-    if e.nexus is None:
-      e.nexus = self._default
-    if e.nexus is False:
-      if self._fallback is None:
-        try:
-          from pox.core import core
-          self._fallback = core.openflow
-        except:
-          raise RuntimeError("No OpenFlow nexus for new connection")
-      e.nexus = self._fallback
-    return e.nexus
+    pass
 
 
 class ConnectionDict (dict):
@@ -319,10 +307,10 @@ class ConnectionDict (dict):
 
   @property
   def dpids (self):
-    return list(self.keys())
+    pass
 
   def iter_dpids (self):
-    return iter(self.keys())
+    pass
 
 
 class OpenFlowNexus (EventMixin):
@@ -368,13 +356,13 @@ class OpenFlowNexus (EventMixin):
 
   @property
   def connections (self):
-    return self._connections
+    pass
 
   def getConnection (self, dpid):
     """
     Get the Connection object associated with a DPID.
     """
-    return self._connections.get(dpid, None)
+    pass
 
   def sendToDPID (self, dpid, data):
     """
@@ -391,14 +379,10 @@ class OpenFlowNexus (EventMixin):
       return False
 
   def _handle_DownEvent (self, event):
-    for c in list(self._connections.values()):
-      try:
-        c.disconnect()
-      except:
-        pass
+    pass
 
   def _connect (self, con):
-    self._connections[con.dpid] = con
+    pass
   def _disconnect (self, dpid):
     if dpid in self._connections:
       del self._connections[dpid]
@@ -412,7 +396,4 @@ def _launch (default_arbiter=True):
   core.register("openflow", OpenFlowNexus())
 
 def launch (default_arbiter=True):
-  from pox.core import core
-  if core.hasComponent("openflow"):
-    return
-  return _launch(default_arbiter)
+  pass

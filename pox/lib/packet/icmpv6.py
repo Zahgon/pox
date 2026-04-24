@@ -115,8 +115,7 @@ def nd_option_def (cls):
   """
   Neighbor Discovery option decorator
   """
-  _nd_options[cls.TYPE] = cls
-  return cls
+  pass
 
 
 def _parse_ndp_options (raw, prev, offset = 0, buf_len = None):
@@ -163,7 +162,7 @@ class NDOptionBase (packet_base):
 
   @property
   def type (self):
-    return self.prev.type
+    pass
   @property
   def code (self):
     return self.prev.code
@@ -172,7 +171,7 @@ class NDOptionBase (packet_base):
     """
     Override to add fields to stringizing
     """
-    return None
+    pass
 
   def _init (self, *args, **kw):
     """
@@ -299,7 +298,7 @@ class NDOptLinkLayerAddress (NDOptionBase):
       self.address = EthAddr(a)
 
   def _fields (self):
-    return {'addr':self.address}
+    pass
 
   @classmethod
   def _unpack_new (cls, raw, offset, t, length, prev):
@@ -335,13 +334,7 @@ class NDOptPrefixInformation (NDOptionBase):
     self.prefix = IPAddr6.UNDEFINED
 
   def _fields (self):
-    r = {}
-    if self.on_link: r['on_link'] = True
-    if self.is_autonomous: r['autonomous'] = True
-    r['valid'] = self.valid_lifetime
-    r['preferred'] = self.preferred_lifetime
-    r['prefix'] = "%s/%s" % (self.prefix, self.prefix_length)
-    return r
+    pass
 
   @classmethod
   def _unpack_new (cls, raw, offset, t, length, prev):
@@ -360,10 +353,7 @@ class NDOptPrefixInformation (NDOptionBase):
 
   @property
   def flags (self):
-    f = 0
-    if self.on_link: f |= self.ON_LINK_FLAG
-    if self.is_autonomous: f |= self.AUTONOMOUS_FLAG
-    return f
+    pass
 
   def pack (self):
     s = struct.pack("!BBII", self.prefix_length, self.flags,
@@ -382,7 +372,7 @@ class NDOptMTU (NDOptionBase):
     self.mtu = 0
 
   def _fields (self):
-    return {'mtu':self.mtu}
+    pass
 
   @classmethod
   def _unpack_new (cls, raw, offset, t, length, prev):
@@ -418,7 +408,7 @@ class icmp_base (packet_base):
 
     Override me to customize stringizing.
     """
-    return {}
+    pass
 
   def _init_ (self):
     """
@@ -434,7 +424,7 @@ class icmp_base (packet_base):
 
   @property
   def type (self):
-    return self.prev.type
+    pass
   @property
   def code (self):
     return self.prev.code
@@ -465,7 +455,7 @@ class icmp_base (packet_base):
 
 class ICMPGeneric (icmp_base):
   def _fields (self):
-    return {'bytes':len(self.raw)}
+    pass
 
   def _init_ (self):
     self.raw = b''
@@ -488,7 +478,7 @@ class NDRouterSolicitation (icmp_base):
     self.options = []
 
   def _fields (self):
-    return {"num_opts":len(self.options)}
+    pass
 
   @classmethod
   def unpack_new (cls, raw, offset = 0, buf_len = None, prev = None):
@@ -536,16 +526,7 @@ class NDRouterAdvertisement (icmp_base):
     self._init(kw)
 
   def _fields (self):
-    f = ['hop_limit','lifetime','reachable',
-         'retrans_timer']
-    r = {}
-    #if len(self.options): r['num_opts'] = len(self.options)
-    if len(self.options): r["opts"] = self.options
-    if self.is_managed: r['managed'] = True
-    if self.is_other: r['other'] = True
-    for ff in f:
-      r[ff] = getattr(self, ff)
-    return r
+    pass
 
   @classmethod
   def unpack_new (cls, raw, offset = 0, buf_len = None, prev = None):
@@ -572,10 +553,7 @@ class NDRouterAdvertisement (icmp_base):
 
   @property
   def flags (self):
-    f = 0
-    if self.is_managed: f |= self.MANAGED_FLAG
-    if self.is_other: f |= self.OTHER_FLAG
-    return f
+    pass
 
   def pack (self):
     o = '\x00' * 4 # _PAD4
@@ -601,12 +579,7 @@ class NDNeighborSolicitation (icmp_base):
     self._init(kw)
 
   def _fields (self):
-    f = ['target']
-    r = {'num_opts':len(self.options)}
-    r["opts"]=self.options
-    for ff in f:
-      r[ff] = getattr(self, ff)
-    return r
+    pass
 
   @classmethod
   def unpack_new (cls, raw, offset = 0, buf_len = None, prev = None):
@@ -658,16 +631,7 @@ class NDNeighborAdvertisement (icmp_base):
     self._init(kw)
 
   def _fields (self):
-    f = ['target']
-    r = {}
-    #if len(self.options): r['num_opts'] = len(self.options)
-    if len(self.options): r["opts"] = self.options
-    if self.is_router: r['router'] = True
-    if self.is_solicited: r['solicited'] = True
-    if self.is_override: r['override'] = True
-    for ff in f:
-      r[ff] = getattr(self, ff)
-    return r
+    pass
 
   @classmethod
   def unpack_new (cls, raw, offset = 0, buf_len = None, prev = None):
@@ -720,11 +684,7 @@ class TimeExceeded (icmp_base):
     self._init(kw)
 
   def _fields (self):
-    f = ['mtu']
-    r = {}
-    for ff in f:
-      r[ff] = getattr(self, ff)
-    return r
+    pass
 
   @classmethod
   def unpack_new (cls, raw, offset = 0, buf_len = None, prev = None):
@@ -765,11 +725,7 @@ class PacketTooBig (icmp_base):
     self._init(kw)
 
   def _fields (self):
-    f = ['mtu']
-    r = {}
-    for ff in f:
-      r[ff] = getattr(self, ff)
-    return r
+    pass
 
   @classmethod
   def unpack_new (cls, raw, offset = 0, buf_len = None, prev = None):
@@ -942,23 +898,14 @@ class icmpv6 (packet_base):
     self._init(kw)
 
   def _calc_checksum (self):
-    ph = self.prev.srcip.raw + self.prev.dstip.raw
-    ph += struct.pack('!IHBB', len(self.raw), 0, 0, 58) # 58 == ICMPv6
-    return checksum(ph + self.raw, skip_word=21)
+    pass
 
   @property
   def checksum_ok (self):
-    if not self.prev: return True
-    if getattr(self, 'raw', None) is None: return True
-    return self.csum == self._calc_checksum()
+    pass
 
   def _to_str (self):
-    t = _type_to_name.get(self.type, str(self.type))
-    cs = ''
-    if not self.checksum_ok:
-      cs = " BAD_CHECKSUM(%02x!=%02x)" % (self.csum, self._calc_checksum())
-    s = '[ICMP+%s/%i%s]' % (t, self.code, cs)
-    return s
+    pass
 
   def parse (self, raw, buf_len=None):
     assert isinstance(raw, bytes)

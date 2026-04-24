@@ -83,32 +83,16 @@ class LLDPSender (object):
     """
     Track changes to switch ports
     """
-    if event.added:
-      self.add_port(event.dpid, event.port, event.ofp.desc.hw_addr)
-    elif event.deleted:
-      self.del_port(event.dpid, event.port)
-    elif event.modified:
-      if event.ofp.desc.config & of.OFPPC_PORT_DOWN == 0:
-        # It's not down, so... try sending a discovery now
-        self.add_port(event.dpid, event.port, event.ofp.desc.hw_addr, False)
+    pass
 
   def _handle_openflow_ConnectionUp (self, event):
-    self.del_switch(event.dpid, set_timer = False)
-
-    ports = [(p.port_no, p.hw_addr) for p in event.ofp.ports]
-
-    for port_num, port_addr in ports:
-      self.add_port(event.dpid, port_num, port_addr, set_timer = False)
-
-    self._set_timer()
+    pass
 
   def _handle_openflow_ConnectionDown (self, event):
-    self.del_switch(event.dpid)
+    pass
 
   def del_switch (self, dpid, set_timer = True):
-    self._this_cycle = [p for p in self._this_cycle if p.dpid != dpid]
-    self._next_cycle = [p for p in self._next_cycle if p.dpid != dpid]
-    if set_timer: self._set_timer()
+    pass
 
   def del_port (self, dpid, port_num, set_timer = True):
     if port_num > of.OFPP_MAX: return
@@ -152,18 +136,7 @@ class LLDPSender (object):
     it on the next-cycle list.  When this cycle's list is empty, starts
     the next cycle.
     """
-    num = int(self._send_chunk_size)
-    fpart = self._send_chunk_size - num
-    if random() < fpart: num += 1
-
-    for _ in range(num):
-      if len(self._this_cycle) == 0:
-        self._this_cycle = self._next_cycle
-        self._next_cycle = []
-        #shuffle(self._this_cycle)
-      item = self._this_cycle.pop(0)
-      self._next_cycle.append(item)
-      core.openflow.sendToDPID(item.dpid, item.packet)
+    pass
 
   def create_packet_out (self, dpid, port_num, port_addr):
     """
@@ -217,11 +190,7 @@ class LinkEvent (Event):
     self.event = event # PacketIn which caused this, if any
 
   def port_for_dpid (self, dpid):
-    if self.link.dpid1 == dpid:
-      return self.link.port1
-    if self.link.dpid2 == dpid:
-      return self.link.port2
-    return None
+    pass
 
 
 class Link (namedtuple("LinkBase",("dpid1","port1","dpid2","port2"))):
@@ -232,18 +201,15 @@ class Link (namedtuple("LinkBase",("dpid1","port1","dpid2","port2"))):
 
     The unidirectional versions of symmetric keys will be equal
     """
-    pairs = list(self.end)
-    pairs.sort()
-    return Link(pairs[0][0],pairs[0][1],pairs[1][0],pairs[1][1])
+    pass
 
   @property
   def flipped (self):
-    pairs = self.end
-    return Link(pairs[1][0],pairs[1][1],pairs[0][0],pairs[0][1])
+    pass
 
   @property
   def end (self):
-    return ((self[0],self[1]),(self[2],self[3]))
+    pass
 
   def __str__ (self):
     return "%s.%s -> %s.%s" % (dpid_to_str(self[0]),self[1],
@@ -291,7 +257,7 @@ class Discovery (EventMixin):
 
   @property
   def send_cycle_time (self):
-    return self._link_timeout / 2.0
+    pass
 
   def install_flow (self, con_or_dpid, priority = None):
     if priority is None:
@@ -314,163 +280,26 @@ class Discovery (EventMixin):
     return True
 
   def _handle_openflow_ConnectionUp (self, event):
-    if self._install_flow:
-      # Make sure we get appropriate traffic
-      log.debug("Installing flow for %s", dpid_to_str(event.dpid))
-      self.install_flow(event.connection)
+    pass
 
   def _handle_openflow_ConnectionDown (self, event):
     # Delete all links on this switch
-    self._delete_links([link for link in self.adjacency
-                        if link.dpid1 == event.dpid
-                        or link.dpid2 == event.dpid])
+    pass
 
   def _expire_links (self):
     """
     Remove apparently dead links
     """
-    now = time.time()
-
-    expired = [link for link,timestamp in self.adjacency.items()
-               if timestamp + self._link_timeout < now]
-    if expired:
-      for link in expired:
-        log.info('link timeout: %s', link)
-
-      self._delete_links(expired)
+    pass
 
   def _handle_openflow_PacketIn (self, event):
     """
     Receive and process LLDP packets
     """
-
-    packet = event.parsed
-
-    if (packet.effective_ethertype != pkt.ethernet.LLDP_TYPE
-        or packet.dst != pkt.ETHERNET.NDP_MULTICAST):
-      if not self._eat_early_packets: return
-      if not event.connection.connect_time: return
-      enable_time = time.time() - self.send_cycle_time - 1
-      if event.connection.connect_time > enable_time:
-        return EventHalt
-      return
-
-    if self._explicit_drop:
-      if event.ofp.buffer_id is not None:
-        log.debug("Dropping LLDP packet %i", event.ofp.buffer_id)
-        msg = of.ofp_packet_out()
-        msg.buffer_id = event.ofp.buffer_id
-        msg.in_port = event.port
-        event.connection.send(msg)
-
-    lldph = packet.find(pkt.lldp)
-    if lldph is None or not lldph.parsed:
-      log.error("LLDP packet could not be parsed")
-      return EventHalt
-    if len(lldph.tlvs) < 3:
-      log.error("LLDP packet without required three TLVs")
-      return EventHalt
-    if lldph.tlvs[0].tlv_type != pkt.lldp.CHASSIS_ID_TLV:
-      log.error("LLDP packet TLV 1 not CHASSIS_ID")
-      return EventHalt
-    if lldph.tlvs[1].tlv_type != pkt.lldp.PORT_ID_TLV:
-      log.error("LLDP packet TLV 2 not PORT_ID")
-      return EventHalt
-    if lldph.tlvs[2].tlv_type != pkt.lldp.TTL_TLV:
-      log.error("LLDP packet TLV 3 not TTL")
-      return EventHalt
-
-    def lookInSysDesc ():
-      r = None
-      for t in lldph.tlvs[3:]:
-        if t.tlv_type == pkt.lldp.SYSTEM_DESC_TLV:
-          # This is our favored way...
-          for line in t.payload.decode().split('\n'):
-            if line.startswith('dpid:'):
-              try:
-                return int(line[5:], 16)
-              except:
-                pass
-          if len(t.payload) == 8:
-            # Maybe it's a FlowVisor LLDP...
-            # Do these still exist?
-            try:
-              return struct.unpack("!Q", t.payload)[0]
-            except:
-              pass
-          return None
-
-    originatorDPID = lookInSysDesc()
-
-    if originatorDPID == None:
-      # We'll look in the CHASSIS ID
-      if lldph.tlvs[0].subtype == pkt.chassis_id.SUB_LOCAL:
-        if lldph.tlvs[0].id.startswith(b'dpid:'):
-          # This is how NOX does it at the time of writing
-          try:
-            originatorDPID = int(lldph.tlvs[0].id[5:], 16)
-          except:
-            pass
-      if originatorDPID == None:
-        if lldph.tlvs[0].subtype == pkt.chassis_id.SUB_MAC:
-          # Last ditch effort -- we'll hope the DPID was small enough
-          # to fit into an ethernet address
-          if len(lldph.tlvs[0].id) == 6:
-            try:
-              s = lldph.tlvs[0].id
-              originatorDPID = struct.unpack("!Q",'\x00\x00' + s)[0]
-            except:
-              pass
-
-    if originatorDPID == None:
-      log.warning("Couldn't find a DPID in the LLDP packet")
-      return EventHalt
-
-    if originatorDPID not in core.openflow.connections:
-      log.info('Received LLDP packet from unknown switch')
-      return EventHalt
-
-    # Get port number from port TLV
-    if lldph.tlvs[1].subtype != pkt.port_id.SUB_PORT:
-      log.warning("Thought we found a DPID, but packet didn't have a port")
-      return EventHalt
-    originatorPort = None
-    if lldph.tlvs[1].id.isdigit():
-      # We expect it to be a decimal value
-      originatorPort = int(lldph.tlvs[1].id)
-    elif len(lldph.tlvs[1].id) == 2:
-      # Maybe it's a 16 bit port number...
-      try:
-        originatorPort  =  struct.unpack("!H", lldph.tlvs[1].id)[0]
-      except:
-        pass
-    if originatorPort is None:
-      log.warning("Thought we found a DPID, but port number didn't " +
-                  "make sense")
-      return EventHalt
-
-    if (event.dpid, event.port) == (originatorDPID, originatorPort):
-      log.warning("Port received its own LLDP packet; ignoring")
-      return EventHalt
-
-    link = Discovery.Link(originatorDPID, originatorPort, event.dpid,
-                          event.port)
-
-    if link not in self.adjacency:
-      self.adjacency[link] = time.time()
-      log.info('link detected: %s', link)
-      self.raiseEventNoErrors(LinkEvent, True, link, event)
-    else:
-      # Just update timestamp
-      self.adjacency[link] = time.time()
-
-    return EventHalt # Probably nobody else needs this event
+    pass
 
   def _delete_links (self, links):
-    for link in links:
-      self.raiseEventNoErrors(LinkEvent, False, link)
-    for link in links:
-      self.adjacency.pop(link, None)
+    pass
 
   def is_edge_port (self, dpid, port):
     """
@@ -538,28 +367,17 @@ class DiscoveryGraph (object):
       self._do_auto_export()
 
   def _handle_openflow_discovery_LinkEvent (self, event):
-    l = event.link
-    k = (l.end[0],l.end[1])
-    if event.added:
-      self.g.add_edge(l.dpid1, l.dpid2, key=k)
-      self.g.edges[l.dpid1,l.dpid2,k]['dead'] = False
-    elif event.removed:
-      self.g.edges[l.dpid1,l.dpid2,k]['dead'] = True
-      #self.g.remove_edge(l.dpid1, l.dpid2, key=k)
-
-    self._do_auto_export()
+    pass
 
   def _handle_openflow_PortStatus (self, event):
-    self._do_auto_export()
+    pass
 
   def _do_auto_export (self):
     if not self.auto_export_file: return
     if self._export_pending: return
     self._export_pending = True
     def do_export ():
-      self._export_pending = False
-      if not self.auto_export_file: return
-      self.export_dot(self.auto_export_file)
+      pass
     core.call_delayed(0.25, do_export)
 
   def label_nodes (self):
@@ -611,17 +429,9 @@ def graph (export = None, dpids_only = False, interval = "2.0"):
   using their names when possible (based on the name of their "local"
   interface).  If you pass --dpids_only, it will just use DPIDs instead.
   """
-  core.registerNew(DiscoveryGraph, export, use_names = not dpids_only,
-                   auto_export_interval = float(interval))
+  pass
 
 
 def launch (no_flow = False, explicit_drop = True, link_timeout = None,
             eat_early_packets = False):
-  explicit_drop = str_to_bool(explicit_drop)
-  eat_early_packets = str_to_bool(eat_early_packets)
-  install_flow = not str_to_bool(no_flow)
-  if link_timeout: link_timeout = int(link_timeout)
-
-  core.registerNew(Discovery, explicit_drop=explicit_drop,
-                   install_flow=install_flow, link_timeout=link_timeout,
-                   eat_early_packets=eat_early_packets)
+  pass

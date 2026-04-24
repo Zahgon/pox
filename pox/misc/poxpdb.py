@@ -24,12 +24,9 @@ import pdb
 import os
 
 def _start_pdb (sig, frame):
-  import pdb
-  pdb.Pdb().set_trace(frame)
+  pass
 
 
 
 def launch ():
-  core.getLogger().info("POX PID is %s", os.getpid())
-  core.getLogger().debug("To send POX to PDB, use kill -USR1 %s", os.getpid())
-  signal.signal(signal.SIGUSR1, _start_pdb)
+  pass

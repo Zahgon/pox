@@ -33,38 +33,9 @@ def _handle_ConnectionUp (event):
   # Set up this switch.
 
   # Turn on ability to specify table in flow_mods
-  msg = nx.nx_flow_mod_table_id()
-  event.connection.send(msg)
-
-  # Clear second table
-  msg = nx.nx_flow_mod(command=of.OFPFC_DELETE, table_id = 1)
-  event.connection.send(msg)
-
-  # Learning rule in table 0
-  msg = nx.nx_flow_mod()
-  msg.table_id = 0
-
-  learn = nx.nx_action_learn(table_id=1,hard_timeout=10)
-  learn.spec.chain(
-      field=nx.NXM_OF_VLAN_TCI, n_bits=12).chain(
-      field=nx.NXM_OF_ETH_SRC, match=nx.NXM_OF_ETH_DST).chain(
-      field=nx.NXM_OF_IN_PORT, output=True)
-
-  msg.actions.append(learn)
-  msg.actions.append(nx.nx_action_resubmit.resubmit_table(1))
-  event.connection.send(msg)
-
-  # Fallthrough rule for table 1: flood
-  msg = nx.nx_flow_mod()
-  msg.table_id = 1
-  msg.priority = 1 # Low priority
-  msg.actions.append(of.ofp_action_output(port = of.OFPP_FLOOD))
-  event.connection.send(msg)
+  pass
 
 
 
 def launch ():
-  def start ():
-    core.openflow.addListenerByName("ConnectionUp", _handle_ConnectionUp)
-    log.info("NX self-learning switch running.")
-  core.call_when_ready(start, ['NX','openflow'])
+  pass

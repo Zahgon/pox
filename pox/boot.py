@@ -314,25 +314,7 @@ def _do_launch (argv, skip_startup=False):
 
 class Options (object):
   def set (self, given_name, value):
-    name = given_name.replace("-", "_")
-    if name.startswith("_") or hasattr(Options, name):
-      # Hey, what's that about?
-      print("Illegal option:", given_name)
-      return False
-    has_field = hasattr(self, name)
-    has_setter = hasattr(self, "_set_" + name)
-    if has_field == False and has_setter == False:
-      print("Unknown option:", given_name)
-      return False
-    if has_setter:
-      setter = getattr(self, "_set_" + name)
-      setter(given_name, name, value)
-    else:
-      if isinstance(getattr(self, name), bool):
-        # Automatic bool-ization
-        value = str_to_bool(value)
-      setattr(self, name, value)
-    return True
+    pass
 
   def process_options (self, options):
     for k,v in options.items():
@@ -376,46 +358,31 @@ class POXOptions (Options):
     self.handle_signals = True
 
   def _set_h (self, given_name, name, value):
-    self._set_help(given_name, name, value)
+    pass
 
   def _set_help (self, given_name, name, value):
-    print(_help_text)
-    #TODO: Summarize options, etc.
-    sys.exit(0)
+    pass
 
   def _set_version (self, given_name, name, value):
-    global core
-    if core is None:
-      core = pox.core.initialize()
-    print(core._get_python_version())
-    sys.exit(0)
+    pass
 
   def _set_unthreaded_sh (self, given_name, name, value):
-    self.threaded_selecthub = False
+    pass
 
   def _set_epoll_sh (self, given_name, name, value):
-    self.epoll_selecthub = str_to_bool(value)
+    pass
 
   def _set_no_openflow (self, given_name, name, value):
-    self.enable_openflow = not str_to_bool(value)
+    pass
 
 #  def _set_no_cli (self, given_name, name, value):
 #    self.cli = not str_to_bool(value)
 
   def _set_log_config (self, given_name, name, value):
-    if value is True:
-      # I think I use a better method for finding the path elsewhere...
-      p = os.path.dirname(os.path.realpath(__file__))
-      value = os.path.join(p, "..", "logging.cfg")
-    self.log_config = value
+    pass
 
   def _set_debug (self, given_name, name, value):
-    value = str_to_bool(value)
-    if value:
-      # Debug implies no openflow and no CLI and verbose
-      #TODO: Is this really an option we need/want?
-      self.verbose = True
-      self.enable_openflow = False
+    pass
 #      self.cli = False
 
 
@@ -440,14 +407,7 @@ def _pre_startup ():
 
 
 def _post_startup ():
-  if _options.enable_openflow:
-    if core._openflow_wanted:
-      if not core.hasComponent("of_01"):
-        # Launch a default of_01
-        import pox.openflow.of_01
-        pox.openflow.of_01.launch()
-    else:
-      logging.getLogger("boot").debug("Not launching of_01")
+  pass
 
 
 
@@ -480,92 +440,11 @@ def _setup_logging ():
 
 
 def set_main_function (f):
-  global _main_thread_function
-  if _main_thread_function == f: return True
-  if _main_thread_function is not None:
-    import logging
-    lg = logging.getLogger("boot")
-    lg.error("Could not set main thread function to: " + str(f))
-    lg.error("The main thread function is already "
-        + "taken by: " + str(_main_thread_function))
-    return False
-  _main_thread_function = f
-  return True
+  pass
 
 
 def boot (argv = None):
   """
   Start up POX.
   """
-
-  # Add pox directory to path
-  base = sys.path[0]
-  sys.path.insert(0, os.path.abspath(os.path.join(base, 'pox')))
-  sys.path.insert(0, os.path.abspath(os.path.join(base, 'ext')))
-
-  thread_count = threading.active_count()
-
-  quiet = False
-
-  try:
-    if argv is None:
-      argv = sys.argv[1:]
-
-    # Always load cli (first!)
-    #TODO: Can we just get rid of the normal options yet?
-    pre = []
-    while len(argv):
-      if argv[0].startswith("-"):
-        pre.append(argv.pop(0))
-      else:
-        break
-    argv = pre + "py --disable".split() + argv
-
-    if _do_launch(argv):
-      _post_startup()
-      core.goUp()
-    else:
-      #return
-      quiet = True
-      raise RuntimeError()
-
-  except SystemExit:
-    return
-  except:
-    if not quiet:
-      traceback.print_exc()
-
-    # Try to exit normally, but do a hard exit if we don't.
-    # This is sort of a hack.  What's the better option?  Raise
-    # the going down event on core even though we never went up?
-
-    try:
-      for _ in range(4):
-        if threading.active_count() <= thread_count:
-          # Normal exit
-          return
-        time.sleep(0.25)
-    except:
-      pass
-
-    os._exit(1)
-    return
-
-  if _main_thread_function:
-    _main_thread_function()
-  else:
-    #core.acquire()
-    try:
-      while True:
-        if core.quit_condition.acquire(False):
-          core.quit_condition.wait(10)
-          core.quit_condition.release()
-        if not core.running: break
-    except:
-      pass
-    #core.scheduler._thread.join() # Sleazy
-
-  try:
-    pox.core.core.quit()
-  except:
-    pass
+  pass
